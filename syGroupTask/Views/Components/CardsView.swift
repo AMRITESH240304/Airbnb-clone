@@ -16,34 +16,33 @@ struct CardsView: View {
     var imageName: String
     var imageURL: String?
     @State private var isLiked = false
+    @State private var cachedImage: UIImage?
+    @State private var isLoading = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             
             ZStack(alignment: .topLeading) {
-                if let imageURL = imageURL, let url = URL(string: imageURL) {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                                .frame(width: 60, height: 60)
-
-                        case .success(let image):
-                            image
+                if let imageURL = imageURL {
+                    Group {
+                        if let cachedImage = cachedImage {
+                            Image(uiImage: cachedImage)
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-
-                        case .failure:
+                        } else if isLoading {
+                            ProgressView()
+                                .frame(width: 60, height: 60)
+                        } else {
                             Image(systemName: "photo")
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
-
-                        @unknown default:
-                            EmptyView()
                         }
                     }
                     .frame(width: 180, height: 180)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .onAppear {
+                        loadImage(from: imageURL)
+                    }
                 } else {
                     Image(systemName: "xmark.circle.fill")
                         .resizable()
@@ -110,6 +109,18 @@ struct CardsView: View {
         }
         .frame(width: 180) // Set fixed width
         .padding(4)
+    }
+    
+    private func loadImage(from urlString: String) {
+        isLoading = true
+        
+        Task {
+            let image = await ImageCacheManager.shared.getImage(from: urlString)
+            await MainActor.run {
+                self.cachedImage = image
+                self.isLoading = false
+            }
+        }
     }
 }
 
