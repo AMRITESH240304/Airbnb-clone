@@ -12,12 +12,12 @@ struct SearchBarView: View {
     
     var body: some View {
         HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(Theme.textPrimary)
+            
             Text("Where are you going?")
                 .font(.system(size: 16))
                 .foregroundColor(Theme.textSecondary)
-            
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(Theme.textPrimary)
             
             Spacer()
         }

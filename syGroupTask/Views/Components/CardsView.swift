@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CardsView: View {
     var flatName: String
+    var location: String
     var cost: String
     var rating: Double
     var label: String
@@ -20,37 +21,46 @@ struct CardsView: View {
         VStack(alignment: .leading, spacing: 6) {
             
             ZStack(alignment: .topLeading) {
-                // Background image - use URL if available, fallback to local image
-                if let imageURL = imageURL {
-                    AsyncImage(url: URL(string: imageURL)) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Image(imageName)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
+                if let imageURL = imageURL, let url = URL(string: imageURL) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(width: 60, height: 60)
+
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+
+                        case .failure:
+                            Image(systemName: "photo")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+
+                        @unknown default:
+                            EmptyView()
+                        }
                     }
-                    .frame(width: 280, height: 280)
+                    .frame(width: 180, height: 180)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 } else {
-                    Image(imageName)
+                    Image(systemName: "xmark.circle.fill")
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: 280, height: 280)
+                        .frame(width: 180, height: 180)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 
                 // Top row: Label + Heart
                 HStack {
                     Text(label)
-                        .font(.caption)
-                        .fontWeight(.medium)
+                        .font(.system(size: 10, weight: .medium)) // Smaller font
                         .foregroundColor(Theme.textPrimary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
                         .background(Theme.textLight.opacity(0.9))
-                        .cornerRadius(8)
+                        .cornerRadius(6)
                     
                     Spacer()
                     
@@ -59,44 +69,54 @@ struct CardsView: View {
                     }) {
                         Image(systemName: isLiked ? "heart.fill" : "heart")
                             .foregroundColor(isLiked ? Theme.primaryColor : Theme.textLight)
-                            .font(.system(size: 20))
+                            .font(.system(size: 16)) // Smaller heart
                     }
                 }
-                .padding(8)
+                .padding(6)
             }
             
             // Flat name
             Text(flatName)
-                .font(.headline)
+                .font(.system(size: 14, weight: .medium)) // Smaller font
+                .lineLimit(2)
+                .foregroundStyle(Theme.textPrimary)
+            
+            // Location
+            Text(location)
+                .font(.system(size: 12))
+                .foregroundColor(Theme.textSecondary)
                 .lineLimit(1)
-                .foregroundStyle(Theme.textSecondary)
             
             // Cost + Rating
             HStack {
-                Text(cost)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(Theme.textPrimary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(cost)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Theme.textPrimary)
+                        .lineLimit(1)
+                }
                 
                 Spacer()
                 
-                HStack(spacing: 4) {
+                HStack(spacing: 2) {
                     Image(systemName: "star.fill")
                         .foregroundColor(Theme.star)
-                        .font(.caption)
-                    Text(String(format: "%.2f", rating))
-                        .font(.subheadline)
+                        .font(.system(size: 10))
+                    Text(String(format: "%.1f", rating))
+                        .font(.system(size: 12))
                         .foregroundColor(Theme.textPrimary)
                 }
             }
         }
-        .padding(8)
+        .frame(width: 180) // Set fixed width
+        .padding(4)
     }
 }
 
 #Preview {
     CardsView(
         flatName: "Flat in Puducherry",
+        location: "White Town, Puducherry",
         cost: "₹3,251 for 2 nights",
         rating: 4.83,
         label: "Guest favourite",

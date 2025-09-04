@@ -16,13 +16,32 @@ struct WishlistView: View {
             VStack(alignment: .leading, spacing: 8) {
                 
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 2), spacing: 0) {
-                    ForEach(images, id: \.self) { image in
-                        Image(systemName: "heart")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 60, height: 60)
-                            .clipped()
+                    ForEach(MockData.imageURLs, id: \.self) { urlString in
+                        if let url = URL(string: urlString) {
+                            AsyncImage(url: url) { phase in
+                                switch phase {
+                                case .empty:
+                                    ProgressView()
+                                        .frame(width: 60, height: 60)
+                                case .success(let image):
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 60, height: 60)
+                                        .clipped()
+                                case .failure:
+                                    Image(systemName: "photo")
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 60, height: 60)
+                                        .clipped()
+                                @unknown default:
+                                    EmptyView()
+                                }
+                            }
+                        }
                     }
+
                 }
                 .frame(width: 160, height: 160)
                 .cornerRadius(12)

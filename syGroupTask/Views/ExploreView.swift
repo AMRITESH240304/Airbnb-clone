@@ -57,7 +57,7 @@ struct ExploreView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         if selectedFilter == "Homes" {
                             homesSection
-                        } else if selectedFilter == "Experience" {  // Changed from "Experiences" to "Experience"
+                        } else if selectedFilter == "Experience" {
                             experiencesSection
                         } else if selectedFilter == "Services" {
                             servicesSection
@@ -101,6 +101,7 @@ struct ExploreView: View {
                             } label: {
                                 CardsView(
                                     flatName: card.flatName,
+                                    location: card.location,
                                     cost: card.cost,
                                     rating: card.rating,
                                     label: card.label,
@@ -145,6 +146,7 @@ struct ExploreView: View {
                             } label: {
                                 CardsView(
                                     flatName: card.flatName,
+                                    location: card.location,
                                     cost: card.cost,
                                     rating: card.rating,
                                     label: card.label,
@@ -189,6 +191,7 @@ struct ExploreView: View {
                             } label: {
                                 CardsView(
                                     flatName: card.flatName,
+                                    location: card.location,
                                     cost: card.cost,
                                     rating: card.rating,
                                     label: card.label,
@@ -233,6 +236,7 @@ struct ExploreView: View {
                             } label: {
                                 CardsView(
                                     flatName: card.flatName,
+                                    location: card.location,
                                     cost: card.cost,
                                     rating: card.rating,
                                     label: card.label,
@@ -281,6 +285,7 @@ struct ExploreView: View {
                             } label: {
                                 CardsView(
                                     flatName: experience.flatName,
+                                    location: experience.location,
                                     cost: experience.cost,
                                     rating: experience.rating,
                                     label: experience.label,
@@ -327,6 +332,7 @@ struct ExploreView: View {
                                 } label: {
                                     CardsView(
                                         flatName: experience.flatName,
+                                        location: experience.location,
                                         cost: experience.cost,
                                         rating: experience.rating,
                                         label: experience.label,
@@ -372,6 +378,7 @@ struct ExploreView: View {
                             } label: {
                                 CardsView(
                                     flatName: experience.flatName,
+                                    location: experience.location,
                                     cost: experience.cost,
                                     rating: experience.rating,
                                     label: experience.label,
@@ -429,6 +436,7 @@ struct ExploreView: View {
                                 } label: {
                                     CardsView(
                                         flatName: experience.flatName,
+                                        location: experience.location,
                                         cost: experience.cost,
                                         rating: experience.rating,
                                         label: experience.label,

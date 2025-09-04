@@ -10,11 +10,12 @@ import Foundation
 struct CardModel: Identifiable {
     let id = UUID()
     let flatName: String
+    let location: String // Add location field
     let cost: String
     let rating: Double
     let label: String
     let imageName: String
-    let imageURL: String? // Add imageURL property
+    let imageURL: String?
     var isLiked: Bool = false
 }
 
@@ -31,7 +32,7 @@ struct ServiceItem: Identifiable {
     let name: String
     let availability: String
     let imageName: String
-    let imageURL: String? // Add imageURL property
+    let imageURL: String?
 }
 
 // New detailed model for card details view
@@ -71,20 +72,23 @@ struct HostInfo: Identifiable {
 
 struct MockData {
     
-    // Image URLs
+    // Updated Image URLs
     static let imageURLs = [
-        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c", // Modern bright room
-        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2", // Bedroom interior
-        "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267", // Minimalistic
-        "https://images.unsplash.com/photo-1542317854-ccbd69f17fff", // Luxury suite
-        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6", // Additional room
-        "https://images.unsplash.com/photo-1571896349842-33c89424de2d", // Hotel room
-        "https://images.unsplash.com/photo-1566665797739-1674de7a421a", // Cozy bedroom
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7"  // Luxury bedroom
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c", // Bright modern room
+        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2", // Cozy bedroom
+        "https://images.unsplash.com/photo-1755414717884-7be3ace0781d?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Minimalist interior
+        "https://images.unsplash.com/photo-1756567579531-405e4df07572?q=80&w=3135&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Luxury suite
+        "https://images.unsplash.com/photo-1756680967556-26861e2c836b?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Warm hotel room
+        "https://images.unsplash.com/photo-1755311903890-c0aed5dc2825?q=80&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Elegant bed setup
+        "https://images.unsplash.com/photo-1755127761416-7626dee66727?q=80&w=986&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Modern hotel view
+        "https://images.unsplash.com/photo-1756677027854-4e2ba420a2a3?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Stylish interior
+        "https://images.unsplash.com/photo-1756680967174-c0e19cf94f49?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Wooden finish
+        "https://images.unsplash.com/photo-1755289445810-bfe6381d51c4?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"  // Luxury room lighting
     ]
     
     static let sampleCards: [CardModel] = [
         CardModel(flatName: "Flat in Puducherry",
+                  location: "White Town, Puducherry",
                   cost: "₹3,251 for 2 nights",
                   rating: 4.83,
                   label: "Guest favourite",
@@ -92,6 +96,7 @@ struct MockData {
                   imageURL: imageURLs[0]),
         
         CardModel(flatName: "Villa in Goa",
+                  location: "Anjuna Beach, Goa",
                   cost: "₹6,500 for 3 nights",
                   rating: 4.95,
                   label: "Top rated",
@@ -99,6 +104,7 @@ struct MockData {
                   imageURL: imageURLs[1]),
         
         CardModel(flatName: "Cabin in Manali",
+                  location: "Old Manali, Himachal",
                   cost: "₹4,200 for 2 nights",
                   rating: 4.76,
                   label: "Mountain view",
@@ -109,13 +115,15 @@ struct MockData {
     // Available for similar dates section
     static let availableForSimilarDates: [CardModel] = [
         CardModel(flatName: "Room in Auroville",
+                  location: "Auroville, Tamil Nadu",
                   cost: "₹2,009 for 2 nights",
                   rating: 4.85,
                   label: "Guest favourite",
                   imageName: "sample_room",
-                  imageURL: imageURLs[3]),
+                  imageURL: imageURLs[1]),
         
         CardModel(flatName: "Flat in Puducherry",
+                  location: "Tamil Quarter, Puducherry",
                   cost: "₹10,271 for 2 nights",
                   rating: 4.89,
                   label: "Guest favourite",
@@ -123,6 +131,7 @@ struct MockData {
                   imageURL: imageURLs[4]),
         
         CardModel(flatName: "Room in Chennai",
+                  location: "Marina Beach, Chennai",
                   cost: "₹7,500 for 2 nights",
                   rating: 4.92,
                   label: "Guest favourite",
@@ -133,6 +142,7 @@ struct MockData {
     // Stay in Puducherry section
     static let stayInPuducherry: [CardModel] = [
         CardModel(flatName: "Flat in Puducherry",
+                  location: "White Town, Puducherry",
                   cost: "₹3,251 for 2 nights",
                   rating: 4.83,
                   label: "Guest favourite",
@@ -140,6 +150,7 @@ struct MockData {
                   imageURL: imageURLs[6]),
         
         CardModel(flatName: "Guest house in Puducherry",
+                  location: "Tamil Quarter, Puducherry",
                   cost: "₹3,424 for 2 nights",
                   rating: 4.84,
                   label: "Guest favourite",
@@ -147,113 +158,126 @@ struct MockData {
                   imageURL: imageURLs[7]),
         
         CardModel(flatName: "Guest suite in Puducherry",
+                  location: "French Quarter, Puducherry",
                   cost: "₹4,200 for 2 nights",
                   rating: 4.91,
                   label: "Guest favourite",
                   imageName: "sample_cabin",
-                  imageURL: imageURLs[0])
+                  imageURL: imageURLs[8])
     ]
     
     // Stay in Paris section
     static let stayInParis: [CardModel] = [
         CardModel(flatName: "Apartment in Paris",
+                  location: "Louvre, Paris",
                   cost: "€89 for 2 nights",
                   rating: 4.88,
                   label: "Superhost",
                   imageName: "sample_room",
-                  imageURL: imageURLs[1]),
+                  imageURL: imageURLs[9]),
         
         CardModel(flatName: "Studio in Montmartre",
+                  location: "Montmartre, Paris",
                   cost: "€120 for 2 nights",
                   rating: 4.92,
                   label: "Guest favourite",
                   imageName: "sample_villa",
-                  imageURL: imageURLs[2]),
+                  imageURL: imageURLs[0]),
         
         CardModel(flatName: "Loft in Le Marais",
+                  location: "Le Marais, Paris",
                   cost: "€150 for 2 nights",
                   rating: 4.95,
                   label: "Rare find",
                   imageName: "sample_cabin",
-                  imageURL: imageURLs[3])
+                  imageURL: imageURLs[1])
     ]
     
     // Experience sections
     static let airbnbOriginals: [CardModel] = [
         CardModel(flatName: "Lunch with fashion icon Lenny Niemeyer in her atelier",
+                  location: "Rio de Janeiro, Brazil",
                   cost: "From ₹9,226 / guest",
                   rating: 4.95,
                   label: "Original",
                   imageName: "sample_room",
-                  imageURL: imageURLs[4]),
+                  imageURL: imageURLs[2]),
         
         CardModel(flatName: "Create seasonal ikebana with Watarai Toru",
+                  location: "Kamakura, Japan",
                   cost: "From ₹8,573 / guest",
                   rating: 5.0,
                   label: "Original",
                   imageName: "sample_villa",
-                  imageURL: imageURLs[5]),
+                  imageURL: imageURLs[3]),
         
         CardModel(flatName: "Hit the spa in Paris",
+                  location: "Turner, Paris",
                   cost: "From ₹12,500 / guest",
                   rating: 4.88,
                   label: "Original",
                   imageName: "sample_cabin",
-                  imageURL: imageURLs[6])
+                  imageURL: imageURLs[4])
     ]
     
     static let photographyExperiences: [CardModel] = [
         CardModel(flatName: "Stylish vintage car photo shoot Tour",
+                  location: "Mumbai, India",
                   cost: "From ₹6,162 / guest",
                   rating: 4.89,
                   label: "Popular",
                   imageName: "sample_room",
-                  imageURL: imageURLs[7]),
+                  imageURL: imageURLs[5]),
         
         CardModel(flatName: "Photo session at the Metropolitan Museum",
+                  location: "New York, USA",
                   cost: "From ₹26,422 / guest",
                   rating: 5.0,
                   label: "Rare find",
                   imageName: "sample_villa",
-                  imageURL: imageURLs[0]),
+                  imageURL: imageURLs[6]),
         
         CardModel(flatName: "Sunrise photography at the Golden Gate",
+                  location: "San Francisco, USA",
                   cost: "From ₹8,500 / guest",
                   rating: 4.95,
                   label: "Popular",
                   imageName: "sample_cabin",
-                  imageURL: imageURLs[1])
+                  imageURL: imageURLs[7])
     ]
     
     static let allExperiencesPondicherry: [CardModel] = [
         CardModel(flatName: "Heritage cycle tour of Pondicherry",
+                  location: "Pondicherry, India",
                   cost: "From ₹999 / guest",
                   rating: 4.91,
                   label: "Popular",
                   imageName: "sample_room",
-                  imageURL: imageURLs[2]),
+                  imageURL: imageURLs[8]),
         
         CardModel(flatName: "Kayak Pondicherry's mangroves with a travel expert",
+                  location: "Pondicherry, India",
                   cost: "From ₹950 / guest",
                   rating: 4.93,
                   label: "Popular",
                   imageName: "sample_villa",
-                  imageURL: imageURLs[3]),
+                  imageURL: imageURLs[9]),
         
         CardModel(flatName: "Underwater photography experience",
+                  location: "Pondicherry, India",
                   cost: "From ₹1,200 / guest",
                   rating: 4.87,
                   label: "New",
                   imageName: "sample_cabin",
-                  imageURL: imageURLs[4])
+                  imageURL: imageURLs[0])
     ]
     
     // Services
     static let servicesInPromenadeBeach: [ServiceItem] = [
-        ServiceItem(name: "Massage", availability: "1 available", imageName: "sample_room", imageURL: imageURLs[5]),
-        ServiceItem(name: "Photography", availability: "Coming soon", imageName: "sample_villa", imageURL: imageURLs[6]),
-        ServiceItem(name: "Chefs", availability: "Coming soon", imageName: "sample_cabin", imageURL: imageURLs[7]),
-        ServiceItem(name: "Private dining", availability: "Coming soon", imageName: "sample_room", imageURL: imageURLs[0])
+        ServiceItem(name: "Massage", availability: "1 available", imageName: "sample_room", imageURL: imageURLs[1]),
+        ServiceItem(name: "Photography", availability: "Coming soon", imageName: "sample_villa", imageURL: imageURLs[2]),
+        ServiceItem(name: "Chefs", availability: "Coming soon", imageName: "sample_cabin", imageURL: imageURLs[3]),
+        ServiceItem(name: "Private dining", availability: "Coming soon", imageName: "sample_room", imageURL: imageURLs[4])
     ]
     
     // Recently viewed properties
@@ -262,7 +286,7 @@ struct MockData {
             title: "Rental unit in Puducherry",
             details: "2 beds",
             rating: 4.75,
-            imageURL: imageURLs[1]
+            imageURL: imageURLs[5]
         )
     ]
     
@@ -271,13 +295,13 @@ struct MockData {
             title: "Room in Thiruvananthapuram",
             details: "2 beds",
             rating: 4.92,
-            imageURL: imageURLs[2]
+            imageURL: imageURLs[6]
         ),
         RecentlyViewedProperty(
             title: "Home in Coimbatore district",
             details: "4 beds",
             rating: 5.0,
-            imageURL: imageURLs[3]
+            imageURL: imageURLs[7]
         )
     ]
     
@@ -323,7 +347,7 @@ struct MockData {
                 title: "Luxury Beach Villa",
                 subtitle: "Entire villa in Goa",
                 location: "Anjuna Beach, Goa, India",
-                images: [imageURLs[1], imageURLs[5], imageURLs[6], imageURLs[7], imageURLs[0]],
+                images: [imageURLs[1], imageURLs[5], imageURLs[6], imageURLs[7], imageURLs[8]],
                 rating: 4.95,
                 reviewCount: 89,
                 isGuestFavourite: true,
@@ -354,7 +378,7 @@ struct MockData {
                 title: "Mountain Retreat Cabin",
                 subtitle: "Entire cabin in Manali",
                 location: "Old Manali, Himachal Pradesh, India",
-                images: [imageURLs[2], imageURLs[3], imageURLs[4], imageURLs[5], imageURLs[6]],
+                images: [imageURLs[2], imageURLs[3], imageURLs[4], imageURLs[9], imageURLs[0]],
                 rating: 4.76,
                 reviewCount: 156,
                 isGuestFavourite: false,
@@ -385,7 +409,7 @@ struct MockData {
                 title: "Peaceful Auroville Room",
                 subtitle: "Private room in Auroville",
                 location: "Auroville, Tamil Nadu, India",
-                images: [imageURLs[3], imageURLs[7], imageURLs[0], imageURLs[1], imageURLs[2]],
+                images: [imageURLs[3], imageURLs[7], imageURLs[8], imageURLs[9], imageURLs[1]],
                 rating: 4.85,
                 reviewCount: 73,
                 isGuestFavourite: true,
@@ -416,7 +440,7 @@ struct MockData {
                 title: "Traditional Guest House",
                 subtitle: "Guest house in Puducherry",
                 location: "Tamil Quarter, Puducherry, India",
-                images: [imageURLs[7], imageURLs[4], imageURLs[5], imageURLs[6], imageURLs[0]],
+                images: [imageURLs[7], imageURLs[4], imageURLs[5], imageURLs[6], imageURLs[2]],
                 rating: 4.84,
                 reviewCount: 92,
                 isGuestFavourite: true,
