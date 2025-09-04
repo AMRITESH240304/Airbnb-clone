@@ -6,135 +6,216 @@
 //
 
 import SwiftUI
+
 struct SearchView: View {
     @Binding var isSearching: Bool
     @Binding var searchText: String
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
+            VStack(spacing: 0) {
                 
-                // Tabs
-                HStack(spacing: 30) {
-                    VStack {
-                        Image(systemName: "house.fill")
-                            .font(.title2)
-                        Text("Homes")
-                            .font(.caption)
-                        Capsule()
-                            .frame(height: 2)
-                            .foregroundColor(Theme.textPrimary)
-                    }
-                    
-                    VStack {
-                        Image(systemName: "balloon")
-                            .font(.title2)
-                        Text("Experiences")
-                            .font(.caption)
-                    }
-                    
-                    VStack {
-                        Image(systemName: "bell")
-                            .font(.title2)
-                        Text("Services")
-                            .font(.caption)
-                    }
-                    
+                // Top section with close button
+                HStack {
                     Spacer()
-                    
                     Button(action: {
                         isSearching = false
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title2)
+                            .foregroundColor(Theme.textSecondary)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 10)
+                
+                // Main content card
+                VStack(spacing: 20) {
+                    
+                    // Where? section
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            Text("Where?")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(Theme.textPrimary)
+                            Spacer()
+                        }
+                        
+                        // Search Field
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(Theme.textSecondary)
+                                .font(.system(size: 18))
+                            TextField("Search destinations", text: $searchText)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .font(.system(size: 16))
+                        }
+                        .padding()
+                        .background(RoundedRectangle(cornerRadius: 12).fill(Color.gray.opacity(0.1)))
+                    }
+                    
+                    // Recent searches
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            Text("Recent searches")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Theme.textPrimary)
+                            Spacer()
+                        }
+                        
+                        VStack(spacing: 16) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "mappin.circle.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(Theme.textSecondary)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Promenade Beach")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Theme.textPrimary)
+                                    Text("5–7 Sept")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(Theme.textSecondary)
+                                }
+                                Spacer()
+                            }
+                            
+                            HStack(spacing: 12) {
+                                Image(systemName: "building.2.fill")
+                                    .font(.system(size: 24))
+                                    .foregroundColor(.green)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Puducherry")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Theme.textPrimary)
+                                    Text("5–7 Sept")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(Theme.textSecondary)
+                                }
+                                Spacer()
+                            }
+                        }
+                    }
+                    
+                    // Suggested destinations
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            Text("Suggested destinations")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Theme.textPrimary)
+                            Spacer()
+                        }
+                        
+                        HStack(spacing: 12) {
+                            Image(systemName: "location.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.blue)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Nearby")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Theme.textPrimary)
+                                Text("Find what's around you")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Theme.textSecondary)
+                            }
+                            Spacer()
+                        }
+                        
+                        // Additional location option
+                        HStack(spacing: 12) {
+                            Spacer()
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Puducherry, Puducherry")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Theme.textPrimary)
+                            }
+                            Spacer()
+                        }
+                    }
+                    
+                    Spacer()
+                }
+                .padding(20)
+                .background(Theme.background)
+                .cornerRadius(20)
+                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+                .padding(.horizontal, 16)
+                .padding(.top, 20)
+                
+                Spacer()
+                
+                // When and Who sections
+                VStack(spacing: 12) {
+                    // When section
+                    HStack {
+                        Text("When")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Theme.textPrimary)
+                        Spacer()
+                        Text("Add dates")
+                            .font(.system(size: 16))
                             .foregroundColor(Theme.textPrimary)
                     }
-                }
-                .padding(.horizontal)
-                
-                // Search Field
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(Theme.textSecondary)
-                    TextField("Search destinations", text: $searchText)
-                        .textFieldStyle(PlainTextFieldStyle())
-                }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 12).stroke(Theme.textSecondary.opacity(0.4)))
-                .padding(.horizontal)
-                
-                // Recent searches
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Recent searches")
-                        .font(.headline)
+                    .padding()
+                    .background(Theme.background)
+                    .cornerRadius(12)
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                     
+                    // Who section
                     HStack {
-                        Image(systemName: "mappin.circle.fill")
-                            .foregroundColor(Theme.textSecondary)
-                        VStack(alignment: .leading) {
-                            Text("Promenade Beach").fontWeight(.semibold)
-                            Text("5–7 Sept").font(.subheadline).foregroundColor(Theme.textSecondary)
-                        }
+                        Text("Who")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Theme.textPrimary)
+                        Spacer()
+                        Text("Add guests")
+                            .font(.system(size: 16))
+                            .foregroundColor(Theme.textPrimary)
                     }
-                    
-                    HStack {
-                        Image(systemName: "leaf.fill")
-                            .foregroundColor(.green)
-                        VStack(alignment: .leading) {
-                            Text("Puducherry").fontWeight(.semibold)
-                            Text("5–7 Sept").font(.subheadline).foregroundColor(Theme.textSecondary)
-                        }
-                    }
+                    .padding()
+                    .background(Theme.background)
+                    .cornerRadius(12)
+                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
-                .padding()
-                .background(Theme.background)
-                .cornerRadius(16)
-                .shadow(radius: 4, y: 2)
-                .padding(.horizontal)
-                
-                // Suggested destinations
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Suggested destinations")
-                        .font(.headline)
-                    
-                    HStack {
-                        Image(systemName: "paperplane.fill")
-                            .foregroundColor(.blue)
-                        VStack(alignment: .leading) {
-                            Text("Nearby").fontWeight(.semibold)
-                            Text("Find what’s around you").font(.subheadline).foregroundColor(.gray)
-                        }
-                    }
-                }
-                .padding()
-                .background(Color.white)
-                .cornerRadius(16)
-                .shadow(radius: 4, y: 2)
-                .padding(.horizontal)
+                .padding(.horizontal, 16)
                 
                 Spacer()
                 
                 // Footer buttons
                 HStack {
-                    Button("Clear all") {}
-                        .foregroundColor(Theme.textPrimary)
+                    Button("Clear all") {
+                        searchText = ""
+                    }
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Theme.textPrimary)
+                    .underline()
+                    
                     Spacer()
+                    
                     Button {
                         // search action
+                        isSearching = false
                     } label: {
-                        HStack {
+                        HStack(spacing: 8) {
                             Image(systemName: "magnifyingglass")
+                                .font(.system(size: 16, weight: .medium))
                             Text("Search")
+                                .font(.system(size: 16, weight: .medium))
                         }
                         .foregroundColor(Theme.textLight)
-                        .padding()
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 16)
                         .background(Theme.primaryColor)
                         .cornerRadius(12)
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 40)
             }
-            .padding(.top)
+            .background(Color.gray.opacity(0.1))
         }
     }
+}
+
+#Preview {
+    SearchView(isSearching: .constant(true), searchText: .constant(""))
 }
