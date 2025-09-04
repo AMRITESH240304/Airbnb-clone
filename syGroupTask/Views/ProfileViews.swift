@@ -40,13 +40,13 @@ struct ProfileViews: View {
                     // Past trips & Connections
                     HStack(spacing: 16) {
                         ProfileOptionCard(
-                            image: "suitcase.fill",
+                            image: "bag",
                             title: "Past trips",
                             badge: true
                         )
                         
                         ProfileOptionCard(
-                            image: "person.3.fill",
+                            image: "people",
                             title: "Connections",
                             badge: true
                         )
@@ -54,7 +54,7 @@ struct ProfileViews: View {
                     
                     // Become a host
                     ProfileOptionCard(
-                        image: "house.fill",
+                        image: "singlePerson",
                         title: "Become a host",
                         subtitle: "It’s easy to start hosting and earn extra income."
                     )
@@ -97,10 +97,10 @@ struct ProfileOptionCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             ZStack(alignment: .topTrailing) {
-                Image(systemName: image)
+                Image(image)
                     .resizable()
                     .scaledToFit()
-                    .frame(height: 40)
+                    .frame(height: 100)
                     .padding(.top, 10)
                 
                 if badge {

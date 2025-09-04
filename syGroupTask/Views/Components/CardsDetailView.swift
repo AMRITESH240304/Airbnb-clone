@@ -10,6 +10,7 @@ import SwiftUI
 struct CardsDetailView: View {
     let cardId: UUID
     @State private var propertyDetail: PropertyDetail
+    @Environment(\.dismiss) private var dismiss
     
     init(cardId: UUID) {
         self.cardId = cardId
@@ -17,7 +18,21 @@ struct CardsDetailView: View {
     }
 
     var body: some View {
-        VStack{
+        VStack {
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "arrow.left")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundColor(Theme.textPrimary)
+                }
+                .padding(.leading)
+                
+                Spacer()
+            }
+            .padding(.top, 8)
+            
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     // Dynamic Image Carousel
@@ -259,6 +274,7 @@ struct CardsDetailView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .ignoresSafeArea(edges: .bottom)
+        .navigationBarBackButtonHidden()
     }
     
     // Helper function to get appropriate SF Symbol for amenities

@@ -59,6 +59,7 @@ struct ContentView: View {
                 .tag(4)
                 .badge("")
             }
+            .tint(Theme.warning)
         }
     }
 }
