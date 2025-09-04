@@ -144,44 +144,6 @@ struct SuggestedDestinationsSection: View {
     }
 }
 
-// MARK: - Date and Guest Section
-struct DateAndGuestSection: View {
-    var body: some View {
-        VStack(spacing: 12) {
-            // When section
-            HStack {
-                Text("When")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Theme.textPrimary)
-                Spacer()
-                Text("Add dates")
-                    .font(.system(size: 16))
-                    .foregroundColor(Theme.textPrimary)
-            }
-            .padding()
-            .background(Theme.background)
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
-            
-            // Who section
-            HStack {
-                Text("Who")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Theme.textPrimary)
-                Spacer()
-                Text("Add guests")
-                    .font(.system(size: 16))
-                    .foregroundColor(Theme.textPrimary)
-            }
-            .padding()
-            .background(Theme.background)
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
-        }
-        .padding(.horizontal, 16)
-    }
-}
-
 // MARK: - Search Footer Section
 struct SearchFooterSection: View {
     @ObservedObject var viewModel: SearchViewModel
@@ -352,7 +314,6 @@ struct SearchResultsGrid: View {
         }
     }
 }
-
 
 #Preview {
     SearchView(isSearching: .constant(true))
