@@ -41,12 +41,12 @@ struct ExploreView: View {
                             VStack {
                                 Text(filter)
                                     .font(.system(size: 16, weight: selectedFilter == filter ? .bold : .regular))
-                                    .foregroundColor(selectedFilter == filter ? .black : .gray)
+                                    .foregroundColor(selectedFilter == filter ? Theme.textPrimary : Theme.textSecondary)
                                 
                                 // Small indicator for selected tab
                                 Rectangle()
                                     .frame(height: 2)
-                                    .foregroundColor(selectedFilter == filter ? .black : .clear)
+                                    .foregroundColor(selectedFilter == filter ? Theme.textPrimary : .clear)
                             }
                         }
                     }
@@ -82,12 +82,12 @@ struct ExploreView: View {
                     HStack {
                         Text("Recently viewed homes")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                             .lineLimit(1)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                     }
                     .padding(.horizontal)
                 }
@@ -125,12 +125,12 @@ struct ExploreView: View {
                     HStack {
                         Text("Available for similar dates")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                             .lineLimit(1)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                     }
                     .padding(.horizontal)
                 }
@@ -168,12 +168,12 @@ struct ExploreView: View {
                     HStack {
                         Text("Stay in Puducherry")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                             .lineLimit(1)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                     }
                     .padding(.horizontal)
                 }
@@ -211,12 +211,12 @@ struct ExploreView: View {
                     HStack {
                         Text("Stay in Paris")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                             .lineLimit(1)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                     }
                     .padding(.horizontal)
                 }
@@ -258,12 +258,12 @@ struct ExploreView: View {
                     HStack {
                         Text("Airbnb Originals")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                             .lineLimit(1)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                     }
                     .padding(.horizontal)
                 }
@@ -306,7 +306,7 @@ struct ExploreView: View {
                         HStack {
                             Text("Photography")
                                 .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.black)
+                                .foregroundColor(Theme.textPrimary)
                                 .lineLimit(1)
                             Spacer()
                         }
@@ -347,12 +347,12 @@ struct ExploreView: View {
                     HStack {
                         Text("All experiences in Promenade Beach")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                             .lineLimit(1)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                     }
                     .padding(.horizontal)
                 }

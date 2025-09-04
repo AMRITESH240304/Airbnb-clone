@@ -34,11 +34,11 @@ struct TripsView: View {
                 }) {
                     Text("Get started")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Theme.textLight)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(
-                            LinearGradient(colors: [Color.pink, Color.red],
+                            LinearGradient(colors: [Theme.primaryColor, Theme.warning],
                                            startPoint: .leading,
                                            endPoint: .trailing)
                         )

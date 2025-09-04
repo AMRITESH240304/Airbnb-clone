@@ -12,12 +12,12 @@ struct SearchBarView: View {
     
     var body: some View {
         HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
+            Text("Where are you going?")
+                .font(.system(size: 16))
+                .foregroundColor(Theme.textSecondary)
             
-            TextField("Start your search", text: $searchText)
-                .foregroundColor(.black)
-                .font(.system(size: 16, weight: .regular))
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(Theme.textPrimary)
             
             Spacer()
         }
@@ -25,9 +25,9 @@ struct SearchBarView: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 25)
-                .fill(Color.white)
+                .fill(Theme.background)
         )
         .padding(.horizontal)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+        .shadow(color: Theme.textPrimary.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }

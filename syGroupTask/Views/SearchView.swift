@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-
 struct SearchView: View {
     @Binding var isSearching: Bool
     @Binding var searchText: String
@@ -24,7 +23,7 @@ struct SearchView: View {
                             .font(.caption)
                         Capsule()
                             .frame(height: 2)
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                     }
                     
                     VStack {
@@ -48,7 +47,7 @@ struct SearchView: View {
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title2)
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                     }
                 }
                 .padding(.horizontal)
@@ -56,12 +55,12 @@ struct SearchView: View {
                 // Search Field
                 HStack {
                     Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
+                        .foregroundColor(Theme.textSecondary)
                     TextField("Search destinations", text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                 }
                 .padding()
-                .background(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.4)))
+                .background(RoundedRectangle(cornerRadius: 12).stroke(Theme.textSecondary.opacity(0.4)))
                 .padding(.horizontal)
                 
                 // Recent searches
@@ -71,10 +70,10 @@ struct SearchView: View {
                     
                     HStack {
                         Image(systemName: "mappin.circle.fill")
-                            .foregroundColor(.gray)
+                            .foregroundColor(Theme.textSecondary)
                         VStack(alignment: .leading) {
                             Text("Promenade Beach").fontWeight(.semibold)
-                            Text("5–7 Sept").font(.subheadline).foregroundColor(.gray)
+                            Text("5–7 Sept").font(.subheadline).foregroundColor(Theme.textSecondary)
                         }
                     }
                     
@@ -83,12 +82,12 @@ struct SearchView: View {
                             .foregroundColor(.green)
                         VStack(alignment: .leading) {
                             Text("Puducherry").fontWeight(.semibold)
-                            Text("5–7 Sept").font(.subheadline).foregroundColor(.gray)
+                            Text("5–7 Sept").font(.subheadline).foregroundColor(Theme.textSecondary)
                         }
                     }
                 }
                 .padding()
-                .background(Color.white)
+                .background(Theme.background)
                 .cornerRadius(16)
                 .shadow(radius: 4, y: 2)
                 .padding(.horizontal)
@@ -118,7 +117,7 @@ struct SearchView: View {
                 // Footer buttons
                 HStack {
                     Button("Clear all") {}
-                        .foregroundColor(.black)
+                        .foregroundColor(Theme.textPrimary)
                     Spacer()
                     Button {
                         // search action
@@ -127,9 +126,9 @@ struct SearchView: View {
                             Image(systemName: "magnifyingglass")
                             Text("Search")
                         }
-                        .foregroundColor(.white)
+                        .foregroundColor(Theme.textLight)
                         .padding()
-                        .background(Color.pink)
+                        .background(Theme.primaryColor)
                         .cornerRadius(12)
                     }
                 }

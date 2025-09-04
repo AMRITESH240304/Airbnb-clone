@@ -2,9 +2,7 @@
 //  MessagesView.swift
 //  syGroupTask
 //
-//  Created by Amritesh Kumar on 02/09/25.
-//
-
+//  Created by Amritesh Kumar on 02/               
 import SwiftUI
 
 struct MessagesView: View {
@@ -17,7 +15,7 @@ struct MessagesView: View {
             HStack {
                 Text("Messages")
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.black)
+                    .foregroundColor(Theme.textPrimary)
                 
                 Spacer()
                 
@@ -27,7 +25,7 @@ struct MessagesView: View {
                     }) {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 18))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                             .padding(10)
                             .background(Color(.systemGray6))
                             .clipShape(Circle())
@@ -38,7 +36,7 @@ struct MessagesView: View {
                     }) {
                         Image(systemName: "gearshape")
                             .font(.system(size: 18))
-                            .foregroundColor(.black)
+                            .foregroundColor(Theme.textPrimary)
                             .padding(10)
                             .background(Color(.systemGray6))
                             .clipShape(Circle())
@@ -60,13 +58,13 @@ struct MessagesView: View {
                                 .padding(.horizontal, 16)
                                 .background(
                                     selectedFilter == filter
-                                    ? Color.black
+                                    ? Theme.textPrimary
                                     : Color(.systemGray6)
                                 )
                                 .foregroundColor(
                                     selectedFilter == filter
-                                    ? .white
-                                    : .black
+                                    ? Theme.textLight
+                                    : Theme.textPrimary
                                 )
                                 .clipShape(Capsule())
                         }

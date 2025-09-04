@@ -14,7 +14,7 @@ struct SectionDetailView: View {
                 } label: {
                     Image(systemName: "arrow.left")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundColor(.black)
+                        .foregroundColor(Theme.textPrimary)
                 }
                 
                 Spacer()
@@ -23,7 +23,7 @@ struct SectionDetailView: View {
                     // Edit functionality
                 }
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.black)
+                .foregroundColor(Theme.textPrimary)
             }
             .padding(.horizontal, 20)
             .padding(.top, 10)
@@ -32,7 +32,7 @@ struct SectionDetailView: View {
             HStack {
                 Text(sectionTitle)
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.black)
+                    .foregroundColor(Theme.textPrimary)
                 Spacer()
             }
             .padding(.horizontal, 20)
@@ -58,7 +58,7 @@ struct SectionDetailView: View {
             }
         }
         .navigationBarHidden(true)
-        .background(Color.white)
+        .background(Theme.background)
     }
 }
 
@@ -80,10 +80,10 @@ struct SectionPropertyCard: View {
                     // Label
                     Text(card.label)
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.black)
+                        .foregroundColor(Theme.textPrimary)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.9))
+                        .background(Theme.textLight.opacity(0.9))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .padding(8)
                 }
@@ -93,9 +93,9 @@ struct SectionPropertyCard: View {
                 } label: {
                     Image(systemName: isLiked ? "heart.fill" : "heart")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(isLiked ? .red : .white)
+                        .foregroundColor(isLiked ? Theme.primaryColor : Theme.textLight)
                         .frame(width: 28, height: 28)
-                        .background(Color.black.opacity(0.3))
+                        .background(Theme.textPrimary.opacity(0.3))
                         .clipShape(Circle())
                 }
                 .padding(8)
@@ -105,22 +105,22 @@ struct SectionPropertyCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(card.flatName)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.black)
+                    .foregroundColor(Theme.textPrimary)
                     .lineLimit(1)
                 
                 Text(card.cost)
                     .font(.system(size: 12))
-                    .foregroundColor(.gray)
+                    .foregroundColor(Theme.textSecondary)
                     .lineLimit(1)
                 
                 HStack(spacing: 4) {
                     Text("★")
                         .font(.system(size: 12))
-                        .foregroundColor(.black)
+                        .foregroundColor(Theme.star)
                     
                     Text(String(format: "%.2f", card.rating))
                         .font(.system(size: 12))
-                        .foregroundColor(.black)
+                        .foregroundColor(Theme.textPrimary)
                 }
             }
         }

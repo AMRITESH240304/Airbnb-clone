@@ -12,7 +12,7 @@ struct RecentlyViewedHomesView: View {
                 } label: {
                     Image(systemName: "arrow.left")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundColor(.black)
+                        .foregroundColor(Theme.textPrimary)
                 }
                 
                 Spacer()
@@ -21,7 +21,7 @@ struct RecentlyViewedHomesView: View {
                     // Edit functionality
                 }
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.black)
+                .foregroundColor(Theme.textPrimary)
             }
             .padding(.horizontal, 20)
             .padding(.top, 10)
@@ -30,7 +30,7 @@ struct RecentlyViewedHomesView: View {
             HStack {
                 Text("Recently viewed homes")
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.black)
+                    .foregroundColor(Theme.textPrimary)
                 Spacer()
             }
             .padding(.horizontal, 20)
@@ -43,7 +43,7 @@ struct RecentlyViewedHomesView: View {
                         HStack {
                             Text("Today")
                                 .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(.black)
+                                .foregroundColor(Theme.textPrimary)
                             Spacer()
                         }
                         .padding(.horizontal, 20)
@@ -60,7 +60,7 @@ struct RecentlyViewedHomesView: View {
                         HStack {
                             Text("Tuesday 2 September")
                                 .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(.black)
+                                .foregroundColor(Theme.textPrimary)
                             Spacer()
                         }
                         .padding(.horizontal, 20)
@@ -82,7 +82,7 @@ struct RecentlyViewedHomesView: View {
             }
         }
         .navigationBarHidden(true)
-        .background(Color.white)
+        .background(Theme.background)
     }
 }
 
@@ -101,7 +101,7 @@ struct RecentPropertyCard: View {
                         .aspectRatio(contentMode: .fill)
                 } placeholder: {
                     Rectangle()
-                        .fill(Color.gray.opacity(0.3))
+                        .fill(Theme.textSecondary.opacity(0.3))
                 }
                 .frame(height: isGridLayout ? 140 : 180)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -111,9 +111,9 @@ struct RecentPropertyCard: View {
                 } label: {
                     Image(systemName: isLiked ? "heart.fill" : "heart")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(isLiked ? .red : .white)
+                        .foregroundColor(isLiked ? Theme.primaryColor : Theme.textLight)
                         .frame(width: 28, height: 28)
-                        .background(Color.black.opacity(0.3))
+                        .background(Theme.textPrimary.opacity(0.3))
                         .clipShape(Circle())
                 }
                 .padding(8)
@@ -123,21 +123,21 @@ struct RecentPropertyCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(property.title)
                     .font(.system(size: isGridLayout ? 14 : 16, weight: .medium))
-                    .foregroundColor(.black)
+                    .foregroundColor(Theme.textPrimary)
                     .lineLimit(1)
                 
                 HStack(spacing: 4) {
                     Text(property.details)
                         .font(.system(size: isGridLayout ? 12 : 14))
-                        .foregroundColor(.gray)
+                        .foregroundColor(Theme.textSecondary)
                     
                     Text("★")
                         .font(.system(size: isGridLayout ? 12 : 14))
-                        .foregroundColor(.black)
+                        .foregroundColor(Theme.star)
                     
                     Text(String(format: "%.2f", property.rating))
                         .font(.system(size: isGridLayout ? 12 : 14))
-                        .foregroundColor(.black)
+                        .foregroundColor(Theme.textPrimary)
                 }
             }
         }

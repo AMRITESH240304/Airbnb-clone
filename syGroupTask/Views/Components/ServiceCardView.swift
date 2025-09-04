@@ -15,12 +15,12 @@ struct ServiceCardView: View {
             // Service Name
             Text(service.name)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.black)
+                .foregroundColor(Theme.textPrimary)
             
             // Availability
             Text(service.availability)
                 .font(.system(size: 14))
-                .foregroundColor(.gray)
+                .foregroundColor(Theme.textSecondary)
         }
         .frame(width: 120)
     }

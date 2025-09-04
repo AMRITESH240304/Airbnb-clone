@@ -29,7 +29,7 @@ struct CardsDetailView: View {
 
                         Text("Entire rental unit in Puducherry, India\n5 guests · 2 bedrooms · 2 beds · 2 bathrooms")
                             .font(.subheadline)
-                            .foregroundColor(.gray)
+                            .foregroundColor(Theme.textSecondary)
                     }
                     .padding(.horizontal)
 
@@ -67,13 +67,13 @@ struct CardsDetailView: View {
                         Image(systemName: "person.circle.fill")
                             .resizable()
                             .frame(width: 50, height: 50)
-                            .foregroundColor(.gray)
+                            .foregroundColor(Theme.textSecondary)
                         VStack(alignment: .leading) {
                             Text("Hosted by Nirav Kumar")
                                 .fontWeight(.bold)
                             Text("7 years hosting")
                                 .font(.subheadline)
-                                .foregroundColor(.gray)
+                                .foregroundColor(Theme.textSecondary)
                         }
                     }
                     .padding(.horizontal)
@@ -97,7 +97,7 @@ struct CardsDetailView: View {
                             .fontWeight(.bold)
                         Text("⭐️ 4.75")
                             .font(.caption)
-                            .foregroundColor(.gray)
+                            .foregroundColor(Theme.textSecondary)
                     }
                     Spacer()
                     Button(action: {
@@ -105,15 +105,15 @@ struct CardsDetailView: View {
                     }) {
                         Text("Check availability")
                             .fontWeight(.bold)
-                            .foregroundColor(.white)
+                            .foregroundColor(Theme.textLight)
                             .padding()
                             .frame(width: 180)
-                            .background(Color.pink)
+                            .background(Theme.primaryColor)
                             .cornerRadius(12)
                     }
                 }
                 .padding()
-                .background(Color.white)
+                .background(Theme.background)
             }
         }
         .ignoresSafeArea(edges: .bottom) // so button sticks at bottom

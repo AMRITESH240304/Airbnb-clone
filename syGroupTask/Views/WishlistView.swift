@@ -29,11 +29,11 @@ struct WishlistView: View {
                 
                 Text("Recently viewed")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.black)
+                    .foregroundColor(Theme.textPrimary)
                 
                 Text("Today")
                     .font(.system(size: 14))
-                    .foregroundColor(.gray)
+                    .foregroundColor(Theme.textSecondary)
             }
             
             Spacer()

@@ -16,12 +16,12 @@ struct ProfileViews: View {
                     // Profile Card
                     VStack(spacing: 10) {
                         Circle()
-                            .fill(Color.black)
+                            .fill(Theme.textPrimary)
                             .frame(width: 80, height: 80)
                             .overlay(
                                 Text("A")
                                     .font(.system(size: 36, weight: .bold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(Theme.textLight)
                             )
                         
                         Text("Amritesh")
@@ -29,7 +29,7 @@ struct ProfileViews: View {
                             .fontWeight(.semibold)
                         
                         Text("Guest")
-                            .foregroundColor(.gray)
+                            .foregroundColor(Theme.textSecondary)
                             .font(.subheadline)
                     }
                     .frame(maxWidth: .infinity)
@@ -109,7 +109,7 @@ struct ProfileOptionCard: View {
                         .fontWeight(.bold)
                         .padding(4)
                         .background(Color.blue)
-                        .foregroundColor(.white)
+                        .foregroundColor(Theme.textLight)
                         .cornerRadius(6)
                         .offset(x: 10, y: -10)
                 }
@@ -121,7 +121,7 @@ struct ProfileOptionCard: View {
             if let subtitle = subtitle {
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundColor(.gray)
+                    .foregroundColor(Theme.textSecondary)
             }
         }
         .padding()
@@ -140,7 +140,7 @@ struct ProfileListItem: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(.black)
+                .foregroundColor(Theme.textPrimary)
             Text(title)
                 .fontWeight(.medium)
             
@@ -153,7 +153,7 @@ struct ProfileListItem: View {
             }
             
             Image(systemName: "chevron.right")
-                .foregroundColor(.gray)
+                .foregroundColor(Theme.textSecondary)
         }
         .padding(.vertical, 4)
     }
