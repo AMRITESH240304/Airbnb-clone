@@ -45,7 +45,7 @@ struct SectionDetailView: View {
                 ], spacing: 16) {
                     ForEach(cards) { card in
                         NavigationLink {
-                            CardsDetailView(number: card.id)
+                            CardsDetailView(cardId: card.id)
                                 .toolbar(.hidden, for: .tabBar)
                         } label: {
                             SectionPropertyCard(card: card)

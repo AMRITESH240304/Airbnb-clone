@@ -96,7 +96,7 @@ struct ExploreView: View {
                     HStack(spacing: 12) {
                         ForEach(MockData.sampleCards) { card in
                             NavigationLink {
-                                CardsDetailView(number: card.id)
+                                CardsDetailView(cardId: card.id)
                                     .toolbar(.hidden, for: .tabBar)
                             } label: {
                                 CardsView(
@@ -139,7 +139,7 @@ struct ExploreView: View {
                     HStack(spacing: 12) {
                         ForEach(MockData.availableForSimilarDates) { card in
                             NavigationLink {
-                                CardsDetailView(number: card.id)
+                                CardsDetailView(cardId: card.id)
                                     .toolbar(.hidden, for: .tabBar)
                             } label: {
                                 CardsView(
@@ -182,7 +182,7 @@ struct ExploreView: View {
                     HStack(spacing: 12) {
                         ForEach(MockData.stayInPuducherry) { card in
                             NavigationLink {
-                                CardsDetailView(number: card.id)
+                                CardsDetailView(cardId: card.id)
                                     .toolbar(.hidden, for: .tabBar)
                             } label: {
                                 CardsView(
@@ -225,7 +225,7 @@ struct ExploreView: View {
                     HStack(spacing: 12) {
                         ForEach(MockData.stayInParis) { card in
                             NavigationLink {
-                                CardsDetailView(number: card.id)
+                                CardsDetailView(cardId: card.id)
                                     .toolbar(.hidden, for: .tabBar)
                             } label: {
                                 CardsView(
@@ -272,7 +272,7 @@ struct ExploreView: View {
                     HStack(spacing: 12) {
                         ForEach(MockData.airbnbOriginals) { experience in
                             NavigationLink {
-                                CardsDetailView(number: experience.id)
+                                CardsDetailView(cardId: experience.id)
                                     .toolbar(.hidden, for: .tabBar)
                             } label: {
                                 CardsView(
@@ -317,7 +317,7 @@ struct ExploreView: View {
                         HStack(spacing: 12) {
                             ForEach(MockData.photographyExperiences) { experience in
                                 NavigationLink {
-                                    CardsDetailView(number: experience.id)
+                                    CardsDetailView(cardId: experience.id)
                                         .toolbar(.hidden, for: .tabBar)
                                 } label: {
                                     CardsView(
@@ -361,7 +361,7 @@ struct ExploreView: View {
                     HStack(spacing: 12) {
                         ForEach(MockData.allExperiencesPondicherry) { experience in
                             NavigationLink {
-                                CardsDetailView(number: experience.id)
+                                CardsDetailView(cardId: experience.id)
                                     .toolbar(.hidden, for: .tabBar)
                             } label: {
                                 CardsView(
@@ -417,7 +417,7 @@ struct ExploreView: View {
                         HStack(spacing: 12) {
                             ForEach(MockData.photographyExperiences) { experience in
                                 NavigationLink {
-                                    CardsDetailView(number: experience.id)
+                                    CardsDetailView(cardId: experience.id)
                                         .toolbar(.hidden, for: .tabBar)
                                 } label: {
                                     CardsView(
