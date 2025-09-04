@@ -26,10 +26,7 @@ struct ExploreView: View {
                     SearchBarView(searchText: $searchText)
                 }
                 .fullScreenCover(isPresented: $isSearching) {
-                    SearchView(
-                        isSearching: $isSearching,
-                        searchText: $searchText
-                    )
+                    SearchView(isSearching: $isSearching)
                 }
 
                 // Top Filter Tabs
