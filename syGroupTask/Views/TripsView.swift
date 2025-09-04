@@ -9,47 +9,59 @@ import SwiftUI
 
 struct TripsView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            
-            Text("Trips")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(Theme.textPrimary)
-                .padding(.horizontal, 20)
+        VStack(spacing: 0) {
+            HStack {
+                Text("Trips")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(Theme.textPrimary)
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
             
             Spacer()
             
-            VStack(spacing: 8) {
-                Text("Build the perfect trip")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(Theme.textPrimary)
+            VStack(spacing: 32) {
+                Image("tripTimeline")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: 280, maxHeight: 280)
                 
-                Text("Explore homes, experiences and services.\nWhen you book, your reservations will appear here.")
-                    .font(.system(size: 14))
-                    .foregroundColor(Theme.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
+                VStack(spacing: 16) {
+                    Text("Build the perfect trip")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(Theme.textPrimary)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Explore homes, experiences and services.\nWhen you book, your reservations will appear here.")
+                        .font(.system(size: 16))
+                        .foregroundColor(Theme.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(2)
+                }
+                .padding(.horizontal, 40)
                 
                 Button(action: {
                     
                 }) {
                     Text("Get started")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Theme.textLight)
+                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding()
+                        .padding(.vertical, 16)
                         .background(
-                            LinearGradient(colors: [Theme.primaryColor, Theme.warning],
-                                           startPoint: .leading,
-                                           endPoint: .trailing)
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.pink)
                         )
-                        .cornerRadius(10)
                 }
-                .padding(.horizontal, 40)
-                .padding(.top, 12)
+                .padding(.horizontal, 60)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.bottom, 40)
+            
+            Spacer()
+            Spacer()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.white)
     }
 }
 
