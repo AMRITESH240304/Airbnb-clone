@@ -10,7 +10,7 @@ import Foundation
 struct CardModel: Identifiable {
     let id = UUID()
     let flatName: String
-    let location: String // Add location field
+    let location: String
     let cost: String
     let rating: Double
     let label: String
@@ -35,13 +35,12 @@ struct ServiceItem: Identifiable {
     let imageURL: String?
 }
 
-// New detailed model for card details view
 struct PropertyDetail: Identifiable {
     let id = UUID()
     let title: String
     let subtitle: String
     let location: String
-    let images: [String] // These will now be URLs
+    let images: [String]
     let rating: Double
     let reviewCount: Int
     let isGuestFavourite: Bool
@@ -72,7 +71,6 @@ struct HostInfo: Identifiable {
 
 struct MockData {
     
-    // Updated Image URLs
     static let imageURLs = [
         "https://images.unsplash.com/photo-1600585154340-be6161a56a0c", // Bright modern room
         "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2", // Cozy bedroom
