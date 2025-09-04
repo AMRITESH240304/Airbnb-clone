@@ -104,7 +104,8 @@ struct ExploreView: View {
                                     cost: card.cost,
                                     rating: card.rating,
                                     label: card.label,
-                                    imageName: card.imageName
+                                    imageName: card.imageName,
+                                    imageURL: card.imageURL
                                 )
                             }
                         }
@@ -147,7 +148,8 @@ struct ExploreView: View {
                                     cost: card.cost,
                                     rating: card.rating,
                                     label: card.label,
-                                    imageName: card.imageName
+                                    imageName: card.imageName,
+                                    imageURL: card.imageURL
                                 )
                             }
                         }
@@ -190,7 +192,8 @@ struct ExploreView: View {
                                     cost: card.cost,
                                     rating: card.rating,
                                     label: card.label,
-                                    imageName: card.imageName
+                                    imageName: card.imageName,
+                                    imageURL: card.imageURL
                                 )
                             }
                         }
@@ -233,7 +236,8 @@ struct ExploreView: View {
                                     cost: card.cost,
                                     rating: card.rating,
                                     label: card.label,
-                                    imageName: card.imageName
+                                    imageName: card.imageName,
+                                    imageURL: card.imageURL
                                 )
                             }
                         }
@@ -280,7 +284,8 @@ struct ExploreView: View {
                                     cost: experience.cost,
                                     rating: experience.rating,
                                     label: experience.label,
-                                    imageName: experience.imageName
+                                    imageName: experience.imageName,
+                                    imageURL: experience.imageURL
                                 )
                             }
                         }
@@ -325,7 +330,8 @@ struct ExploreView: View {
                                         cost: experience.cost,
                                         rating: experience.rating,
                                         label: experience.label,
-                                        imageName: experience.imageName
+                                        imageName: experience.imageName,
+                                        imageURL: experience.imageURL
                                     )
                                 }
                             }
@@ -369,7 +375,8 @@ struct ExploreView: View {
                                     cost: experience.cost,
                                     rating: experience.rating,
                                     label: experience.label,
-                                    imageName: experience.imageName
+                                    imageName: experience.imageName,
+                                    imageURL: experience.imageURL
                                 )
                             }
                         }
@@ -425,7 +432,8 @@ struct ExploreView: View {
                                         cost: experience.cost,
                                         rating: experience.rating,
                                         label: experience.label,
-                                        imageName: experience.imageName
+                                        imageName: experience.imageName,
+                                        imageURL: experience.imageURL
                                     )
                                 }
                             }

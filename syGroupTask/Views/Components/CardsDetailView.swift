@@ -22,12 +22,20 @@ struct CardsDetailView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     // Dynamic Image Carousel
                     TabView {
-                        ForEach(propertyDetail.images, id: \.self) { imageName in
-                            Image(imageName)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: 280)
-                                .clipped()
+                        ForEach(propertyDetail.images, id: \.self) { imageURL in
+                            AsyncImage(url: URL(string: imageURL)) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                            } placeholder: {
+                                Rectangle()
+                                    .overlay(
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle())
+                                    )
+                            }
+                            .frame(height: 280)
+                            .clipped()
                         }
                     }
                     .frame(height: 280)
@@ -89,12 +97,21 @@ struct CardsDetailView: View {
 
                     // Host Info
                     HStack {
-                        Image(propertyDetail.host.profileImage)
-                            .resizable()
-                            .frame(width: 50, height: 50)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(lineWidth: 1))
-                        
+                        AsyncImage(url: URL(string: propertyDetail.host.profileImage)) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Circle()
+                                .overlay(
+                                    Image(systemName: "person.fill")
+                                        .foregroundColor(Theme.textSecondary)
+                                )
+                        }
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(lineWidth: 1))
+
                         VStack(alignment: .leading) {
                             HStack {
                                 Text("Hosted by \(propertyDetail.host.name)")
