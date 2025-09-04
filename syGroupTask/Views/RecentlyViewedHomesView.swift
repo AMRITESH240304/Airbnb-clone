@@ -5,7 +5,6 @@ struct RecentlyViewedHomesView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Navigation Header
             HStack {
                 Button {
                     dismiss()
@@ -18,7 +17,6 @@ struct RecentlyViewedHomesView: View {
                 Spacer()
                 
                 Button("Edit") {
-                    // Edit functionality
                 }
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Theme.textPrimary)
@@ -26,7 +24,6 @@ struct RecentlyViewedHomesView: View {
             .padding(.horizontal, 20)
             .padding(.top, 10)
             
-            // Title
             HStack {
                 Text("Recently viewed homes")
                     .font(.system(size: 28, weight: .bold))
@@ -38,7 +35,6 @@ struct RecentlyViewedHomesView: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // Today Section
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
                             Text("Today")
@@ -48,14 +44,12 @@ struct RecentlyViewedHomesView: View {
                         }
                         .padding(.horizontal, 20)
                         
-                        // Today's properties
                         ForEach(MockData.todayViewed) { property in
                             RecentPropertyCard(property: property)
                                 .padding(.horizontal, 20)
                         }
                     }
                     
-                    // Tuesday 2 September Section
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
                             Text("Tuesday 2 September")
@@ -65,7 +59,6 @@ struct RecentlyViewedHomesView: View {
                         }
                         .padding(.horizontal, 20)
                         
-                        // Previous day's properties in grid
                         LazyVGrid(columns: [
                             GridItem(.flexible(), spacing: 12),
                             GridItem(.flexible(), spacing: 12)

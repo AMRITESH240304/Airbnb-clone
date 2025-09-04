@@ -13,10 +13,8 @@ struct SearchResultCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            // Image with heart button and label
             ZStack(alignment: .topTrailing) {
                 ZStack(alignment: .topLeading) {
-                    // Use AsyncImage if imageURL is available
                     if let imageURL = card.imageURL {
                         AsyncImage(url: URL(string: imageURL)) { image in
                             image
@@ -39,7 +37,6 @@ struct SearchResultCard: View {
                             .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     
-                    // Label
                     Text(card.label)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Theme.textPrimary)
@@ -63,7 +60,6 @@ struct SearchResultCard: View {
                 .padding(6)
             }
             
-            // Property Details
             VStack(alignment: .leading, spacing: 3) {
                 Text(card.flatName)
                     .font(.system(size: 13, weight: .medium))

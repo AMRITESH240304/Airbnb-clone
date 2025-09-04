@@ -181,7 +181,6 @@ struct CardsDetailView: View {
 
                     Divider()
 
-                    // Description Section
                     VStack(alignment: .leading, spacing: 8) {
                         Text("About this place")
                             .font(.title3)
@@ -197,7 +196,6 @@ struct CardsDetailView: View {
 
                     Divider()
 
-                    // Host Details Section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Meet your host")
                             .font(.title3)
@@ -228,14 +226,12 @@ struct CardsDetailView: View {
                     }
                     .padding(.horizontal)
 
-                    // Add some bottom padding
                     Spacer()
                         .frame(height: 100)
                 }
                 .padding(.vertical, 8)
             }
 
-            // Sticky Button
             VStack {
                 Divider()
                 HStack {
@@ -277,7 +273,6 @@ struct CardsDetailView: View {
         .navigationBarBackButtonHidden()
     }
     
-    // Helper function to get appropriate SF Symbol for amenities
     private func getAmenityIcon(_ amenity: String) -> String {
         switch amenity.lowercased() {
         case "wifi": return "wifi"

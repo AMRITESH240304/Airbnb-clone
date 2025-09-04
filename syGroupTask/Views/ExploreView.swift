@@ -70,7 +70,6 @@ struct ExploreView: View {
     // MARK: - Different Sections
     var homesSection: some View {
         VStack(alignment: .leading, spacing: 24) {
-            // Recently viewed homes section
             VStack(alignment: .leading) {
                 NavigationLink {
                     RecentlyViewedHomesView()
@@ -111,7 +110,6 @@ struct ExploreView: View {
                 }
             }
             
-            // Available for similar dates section
             VStack(alignment: .leading) {
                 NavigationLink {
                     SectionDetailView(
@@ -155,7 +153,6 @@ struct ExploreView: View {
                 }
             }
             
-            // Stay in Puducherry section
             VStack(alignment: .leading) {
                 NavigationLink {
                     SectionDetailView(
@@ -199,7 +196,6 @@ struct ExploreView: View {
                 }
             }
             
-            // Stay in Paris section
             VStack(alignment: .leading) {
                 NavigationLink {
                     SectionDetailView(
@@ -247,7 +243,6 @@ struct ExploreView: View {
     
     var experiencesSection: some View {
         VStack(alignment: .leading, spacing: 24) {
-            // Airbnb Originals section
             VStack(alignment: .leading) {
                 NavigationLink {
                     SectionDetailView(
@@ -291,7 +286,6 @@ struct ExploreView: View {
                 }
             }
             
-            // Discover services on Airbnb - Photography section
             VStack(alignment: .leading, spacing: 16) {
                 Text("Discover services on Airbnb")
                     .font(.system(size: 20, weight: .bold))
@@ -339,7 +333,6 @@ struct ExploreView: View {
                 }
             }
             
-            // All experiences in Promenade Beach section
             VStack(alignment: .leading) {
                 NavigationLink {
                     SectionDetailView(
@@ -387,7 +380,6 @@ struct ExploreView: View {
     
     var servicesSection: some View {
         VStack(alignment: .leading, spacing: 24) {
-            // Services in Promenade Beach section
             VStack(alignment: .leading, spacing: 16) {
                 Text("Services in Promenade Beach")
                     .font(.system(size: 16, weight: .bold))
@@ -397,7 +389,6 @@ struct ExploreView: View {
                     HStack(spacing: 16) {
                         ForEach(MockData.servicesInPromenadeBeach) { service in
                             Button {
-                                // Handle service selection
                             } label: {
                                 ServiceCardView(service: service)
                             }
@@ -407,7 +398,6 @@ struct ExploreView: View {
                 }
             }
             
-            // Discover services on Airbnb section for Services tab
             VStack(alignment: .leading, spacing: 16) {
                 Text("Discover services on Airbnb")
                     .font(.system(size: 20, weight: .bold))

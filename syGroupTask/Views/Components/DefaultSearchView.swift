@@ -12,7 +12,6 @@ struct DefaultSearchView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Main content card
             VStack(spacing: 20) {
                 SearchFieldSection(viewModel: viewModel)
                 RecentSearchesSection(viewModel: viewModel)

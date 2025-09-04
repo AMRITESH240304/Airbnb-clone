@@ -33,13 +33,11 @@ class SearchViewModel: ObservableObject {
     }
     
     private func executeSearch(query: String) {
-        // Combine all available cards for searching
         let allCards = MockData.sampleCards +
                       MockData.availableForSimilarDates +
                       MockData.stayInPuducherry +
                       MockData.stayInParis
         
-        // Filter cards based on search query
         searchResults = allCards.filter { card in
             card.flatName.localizedCaseInsensitiveContains(query) ||
             card.location.localizedCaseInsensitiveContains(query) ||
@@ -51,7 +49,6 @@ class SearchViewModel: ObservableObject {
         isShowingResults = true
         searchText = "Nearby"
         
-        // Show local Puducherry properties for "nearby" search
         searchResults = MockData.stayInPuducherry + [MockData.sampleCards[0]]
     }
     

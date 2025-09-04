@@ -54,7 +54,7 @@ struct CardsView: View {
                 // Top row: Label + Heart
                 HStack {
                     Text(label)
-                        .font(.system(size: 10, weight: .medium)) // Smaller font
+                        .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Theme.textPrimary)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
@@ -74,13 +74,11 @@ struct CardsView: View {
                 .padding(6)
             }
             
-            // Flat name
             Text(flatName)
-                .font(.system(size: 14, weight: .medium)) // Smaller font
+                .font(.system(size: 14, weight: .medium))
                 .lineLimit(2)
                 .foregroundStyle(Theme.textPrimary)
             
-            // Location
             Text(location)
                 .font(.system(size: 12))
                 .foregroundColor(Theme.textSecondary)
@@ -107,7 +105,7 @@ struct CardsView: View {
                 }
             }
         }
-        .frame(width: 180) // Set fixed width
+        .frame(width: 180) 
         .padding(4)
     }
     

@@ -5,7 +5,6 @@ struct ServiceCardView: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            // Service Image - use URL if available, fallback to local image
             if let imageURL = service.imageURL {
                 AsyncImage(url: URL(string: imageURL)) { image in
                     image
@@ -26,12 +25,10 @@ struct ServiceCardView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             
-            // Service Name
             Text(service.name)
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Theme.textPrimary)
             
-            // Availability
             Text(service.availability)
                 .font(.system(size: 14))
                 .foregroundColor(Theme.textSecondary)

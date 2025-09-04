@@ -14,7 +14,6 @@ struct SearchView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Top section with close button
                 SearchHeaderView(isSearching: $isSearching, viewModel: viewModel)
                 
                 if viewModel.isShowingResults {

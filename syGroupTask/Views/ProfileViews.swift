@@ -13,7 +13,6 @@ struct ProfileViews: View {
             ScrollView {
                 VStack {
                     
-                    // Profile Card
                     VStack(spacing: 10) {
                         Circle()
                             .fill(Theme.textPrimary)
@@ -37,7 +36,6 @@ struct ProfileViews: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(16)
                     
-                    // Past trips & Connections
                     HStack(spacing: 16) {
                         ProfileOptionCard(
                             image: "bag",
@@ -52,14 +50,12 @@ struct ProfileViews: View {
                         )
                     }
                     
-                    // Become a host
                     ProfileOptionCard(
                         image: "singlePerson",
                         title: "Become a host",
                         subtitle: "It’s easy to start hosting and earn extra income."
                     )
                     
-                    // ✅ Settings in list style
                     VStack(spacing: 20) {
                         Divider().padding(.top, 10)
                         
@@ -131,7 +127,6 @@ struct ProfileOptionCard: View {
     }
 }
 
-// MARK: - Reusable List Item
 struct ProfileListItem: View {
     var icon: String
     var title: String

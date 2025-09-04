@@ -7,7 +7,6 @@ struct SectionDetailView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Navigation Header
             HStack {
                 Button {
                     dismiss()
@@ -20,7 +19,6 @@ struct SectionDetailView: View {
                 Spacer()
                 
                 Button("Edit") {
-                    // Edit functionality
                 }
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Theme.textPrimary)
@@ -28,7 +26,6 @@ struct SectionDetailView: View {
             .padding(.horizontal, 20)
             .padding(.top, 10)
             
-            // Title
             HStack {
                 Text(sectionTitle)
                     .font(.system(size: 28, weight: .bold))

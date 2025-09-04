@@ -29,7 +29,6 @@ struct DateAndGuestSection: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            // When section
             Button(action: {
                 showingDatePicker = true
             }) {
@@ -60,7 +59,6 @@ struct DateAndGuestSection: View {
                 )
             }
 
-            // Who section
             HStack {
                 Text("Who")
                     .font(.system(size: 16, weight: .medium))
