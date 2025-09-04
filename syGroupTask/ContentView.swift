@@ -60,7 +60,6 @@ struct ContentView: View {
                 .badge("")
             }
         }
-        .padding([.leading,.trailing],20)
     }
 }
 
