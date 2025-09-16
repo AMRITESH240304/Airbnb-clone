@@ -154,7 +154,7 @@ class DatePickerViewModel: ObservableObject {
         var months: [String] = []
         var currentDate = Date()
         
-        for i in 0..<6 { 
+        for _ in 0..<6 { 
             months.append(formatter.string(from: currentDate))
             currentDate = Calendar.current.date(byAdding: .month, value: 1, to: currentDate) ?? currentDate
         }

@@ -39,22 +39,16 @@ struct ProfileViews: View {
                     HStack(spacing: 16) {
                         ProfileOptionCard(
                             image: "bag",
-                            title: "Past trips",
+                            title: "Become a Professional",
                             badge: true
                         )
                         
                         ProfileOptionCard(
                             image: "people",
-                            title: "Connections",
+                            title: "Business Collaboration / Franchise",
                             badge: true
                         )
                     }
-                    
-                    ProfileOptionCard(
-                        image: "singlePerson",
-                        title: "Become a host",
-                        subtitle: "It’s easy to start hosting and earn extra income."
-                    )
                     
                     VStack(spacing: 20) {
                         Divider().padding(.top, 10)

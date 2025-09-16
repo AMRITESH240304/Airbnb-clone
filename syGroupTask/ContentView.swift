@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var seletedTab:Int = 0
+    @State private var showLoginView = true
     var body: some View {
         VStack{
             TabView(selection: $seletedTab){
@@ -60,6 +61,9 @@ struct ContentView: View {
                 .badge("")
             }
             .tint(Theme.warning)
+        }
+        .fullScreenCover(isPresented: $showLoginView) {
+            LoginSignUpView()
         }
     }
 }

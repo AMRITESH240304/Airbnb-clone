@@ -10,9 +10,9 @@ import SwiftUI
 struct ExploreView: View {
     @State private var searchText = ""
     @State private var isSearching = false
-    @State private var selectedFilter: String = "Homes"
+    @State private var selectedFilter: String = "Buy"
     
-    let filters = ["Homes", "Experience", "Services"]
+    let filters = ["Buy", "Sell", "Rent"]
 
     var body: some View {
         ZStack {
@@ -52,11 +52,11 @@ struct ExploreView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
-                        if selectedFilter == "Homes" {
+                        if selectedFilter == "Buy" {
                             homesSection
-                        } else if selectedFilter == "Experience" {
+                        } else if selectedFilter == "Sell" {
                             experiencesSection
-                        } else if selectedFilter == "Services" {
+                        } else if selectedFilter == "Rent" {
                             servicesSection
                         }
                     }
