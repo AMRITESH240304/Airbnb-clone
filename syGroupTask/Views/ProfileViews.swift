@@ -8,72 +8,198 @@
 import SwiftUI
 
 struct ProfileViews: View {
+    @EnvironmentObject var authViewModel: AuthManagerViewModel
+    @State private var showLoginView = false
+    
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack {
-                    
-                    VStack(spacing: 10) {
-                        Circle()
-                            .fill(Theme.textPrimary)
-                            .frame(width: 80, height: 80)
-                            .overlay(
-                                Text("A")
-                                    .font(.system(size: 36, weight: .bold))
-                                    .foregroundColor(Theme.textLight)
-                            )
-                        
-                        Text("Amritesh")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Text("Guest")
-                            .foregroundColor(Theme.textSecondary)
-                            .font(.subheadline)
-                    }
+            if authViewModel.isAuthenticated {
+                authenticatedProfileView
+            } else {
+                guestProfileView
+            }
+        }
+        .fullScreenCover(isPresented: $showLoginView) {
+            LoginSignUpView()
+        }
+    }
+    
+    private var guestProfileView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Profile")
+                .font(.largeTitle)
+                .fontWeight(.semibold)
+                .foregroundColor(Theme.textPrimary)
+                .padding(.top, 16)
+                .padding(.bottom, 4)
+            
+            Text("Log in and start planning your next trip.")
+                .font(.headline)
+                .foregroundColor(Theme.textSecondary)
+                .padding(.bottom, 16)
+            
+            Button(action: {
+                authViewModel.exitGuestMode()
+                showLoginView = true
+            }) {
+                Text("Log in or sign up")
+                    .font(.headline)
+                    .fontWeight(.medium)
+                    .foregroundColor(Theme.textLight)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(16)
+                    .padding(.vertical, 16)
+                    .background(Color.black)
+                    .cornerRadius(8)
+            }
+            .padding(.bottom, 24)
+            
+            Divider()
+                .padding(.vertical, 8)
+            
+            // Settings row
+            Button(action: {
+                // Account settings action
+            }) {
+                HStack {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 22))
+                        .foregroundColor(Theme.textPrimary)
+                        .frame(width: 32)
                     
-                    HStack(spacing: 16) {
-                        ProfileOptionCard(
-                            image: "bag",
-                            title: "Become a Professional",
-                            badge: true
+                    Text("Account settings")
+                        .font(.headline)
+                        .foregroundColor(Theme.textPrimary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(Theme.textSecondary)
+                }
+                .padding(.vertical, 12)
+            }
+            
+            Divider()
+            
+            // Get help row
+            Button(action: {
+                // Get help action
+            }) {
+                HStack {
+                    Image(systemName: "questionmark.circle")
+                        .font(.system(size: 22))
+                        .foregroundColor(Theme.textPrimary)
+                        .frame(width: 32)
+                    
+                    Text("Get help")
+                        .font(.headline)
+                        .foregroundColor(Theme.textPrimary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(Theme.textSecondary)
+                }
+                .padding(.vertical, 12)
+            }
+            
+            Divider()
+            
+            // Legal row
+            Button(action: {
+                // Legal action
+            }) {
+                HStack {
+                    Image(systemName: "book.closed")
+                        .font(.system(size: 22))
+                        .foregroundColor(Theme.textPrimary)
+                        .frame(width: 32)
+                    
+                    Text("Legal")
+                        .font(.headline)
+                        .foregroundColor(Theme.textPrimary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(Theme.textSecondary)
+                }
+                .padding(.vertical, 12)
+            }
+            
+            Divider()
+            
+            Spacer()
+        }
+        .padding(.horizontal)
+    }
+    
+    private var authenticatedProfileView: some View {
+        ScrollView {
+            VStack {
+                VStack(spacing: 10) {
+                    Circle()
+                        .fill(Theme.textPrimary)
+                        .frame(width: 80, height: 80)
+                        .overlay(
+                            Text("A")
+                                .font(.system(size: 36, weight: .bold))
+                                .foregroundColor(Theme.textLight)
                         )
-                        
-                        ProfileOptionCard(
-                            image: "people",
-                            title: "Business Collaboration / Franchise",
-                            badge: true
-                        )
+                    
+                    Text("Amritesh")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                    
+                    Text("Guest")
+                        .foregroundColor(Theme.textSecondary)
+                        .font(.subheadline)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(16)
+                
+                HStack(spacing: 16) {
+                    ProfileOptionCard(
+                        image: "bag",
+                        title: "Become a Professional",
+                        badge: true
+                    )
+                    
+                    ProfileOptionCard(
+                        image: "people",
+                        title: "Business Collaboration / Franchise",
+                        badge: true
+                    )
+                }
+                
+                VStack(spacing: 20) {
+                    Divider().padding(.top, 10)
+                    
+                    Section {
+                        ProfileListItem(icon: "gearshape.fill", title: "Account settings", showBadge: true)
+                        ProfileListItem(icon: "questionmark.circle", title: "Get help")
+                        ProfileListItem(icon: "person", title: "View profile")
+                        ProfileListItem(icon: "hand.raised", title: "Privacy")
                     }
                     
-                    VStack(spacing: 20) {
-                        Divider().padding(.top, 10)
+                    Section {
+                        ProfileListItem(icon: "person.2", title: "Refer a host")
+                        ProfileListItem(icon: "person.crop.circle.badge.plus", title: "Find a co-host")
+                        ProfileListItem(icon: "book.closed", title: "Legal")
                         
-                            Section {
-                                ProfileListItem(icon: "gearshape.fill", title: "Account settings", showBadge: true)
-                                ProfileListItem(icon: "questionmark.circle", title: "Get help")
-                                ProfileListItem(icon: "person", title: "View profile")
-                                ProfileListItem(icon: "hand.raised", title: "Privacy")
-                            }
-                            
-                            Section {
-                                ProfileListItem(icon: "person.2", title: "Refer a host")
-                                ProfileListItem(icon: "person.crop.circle.badge.plus", title: "Find a co-host")
-                                ProfileListItem(icon: "book.closed", title: "Legal")
-                                ProfileListItem(icon: "rectangle.portrait.and.arrow.right", title: "Log out")
-                            }
-                        
+                        Button(action: {
+                            authViewModel.removeUser()
+                        }) {
+                            ProfileListItem(icon: "rectangle.portrait.and.arrow.right", title: "Log out")
+                        }
                     }
                 }
-                .padding()
             }
-            .navigationTitle("Profile")
-            .navigationBarTitleDisplayMode(.large)
+            .padding()
         }
+        .navigationTitle("Profile")
+        .navigationBarTitleDisplayMode(.large)
     }
 }
 
@@ -148,6 +274,7 @@ struct ProfileListItem: View {
     }
 }
 
-#Preview{
+#Preview {
     ProfileViews()
+        .environmentObject(AuthManagerViewModel())
 }

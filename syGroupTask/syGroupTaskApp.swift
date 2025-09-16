@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct syGroupTaskApp: App {
+    @StateObject private var authViewModel = AuthManagerViewModel()
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(authViewModel)
         }
     }
 }

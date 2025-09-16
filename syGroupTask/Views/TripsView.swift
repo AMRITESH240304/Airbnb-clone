@@ -8,7 +8,28 @@
 import SwiftUI
 
 struct TripsView: View {
+    @EnvironmentObject var authManager: AuthManagerViewModel
+    @State private var showLoginView = false
+    
     var body: some View {
+        NavigationStack {
+            if authManager.isAuthenticated {
+                authenticatedTripsView
+            } else {
+                NotLoginView(
+                    screen: "No trips yet",
+                    tittle: "When you're ready to plan your next trip, we're here to help"
+                )
+                .navigationTitle("Trips")
+                .navigationBarTitleDisplayMode(.large)
+            }
+        }
+        .fullScreenCover(isPresented: $showLoginView) {
+            LoginSignUpView()
+        }
+    }
+    
+    private var authenticatedTripsView: some View {
         VStack(spacing: 0) {
             HStack {
                 Text("Trips")
@@ -18,29 +39,31 @@ struct TripsView: View {
             }
             .padding(.horizontal, 20)
             .padding(.top, 20)
-            
+
             Spacer()
-            
+
             VStack(spacing: 32) {
                 Image("tripTimeline")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: 280, maxHeight: 280)
-                
+
                 VStack(spacing: 16) {
                     Text("Build the perfect trip")
                         .font(.system(size: 22, weight: .semibold))
                         .foregroundColor(Theme.textPrimary)
                         .multilineTextAlignment(.center)
-                    
-                    Text("Explore homes, experiences and services.\nWhen you book, your reservations will appear here.")
-                        .font(.system(size: 16))
-                        .foregroundColor(Theme.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(2)
+
+                    Text(
+                        "Explore homes, experiences and services.\nWhen you book, your reservations will appear here."
+                    )
+                    .font(.system(size: 16))
+                    .foregroundColor(Theme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
                 }
                 .padding(.horizontal, 40)
-                
+
                 Button(action: {
                     
                 }) {
@@ -51,20 +74,21 @@ struct TripsView: View {
                         .padding(.vertical, 16)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.pink)
+                                .fill(Theme.primaryColor)
                         )
                 }
                 .padding(.horizontal, 60)
             }
-            
+
             Spacer()
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.white)
+        .background(Theme.background)
     }
 }
 
 #Preview {
     TripsView()
+        .environmentObject(AuthManagerViewModel())
 }

@@ -10,6 +10,7 @@ import SwiftUI
 
 struct LoginSignUpView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var authManager:AuthManagerViewModel
     @State private var phoneNumber = ""
     @State private var countryCode = "+91"
     @State private var country = "India"
@@ -137,6 +138,10 @@ struct LoginSignUpView: View {
                                 let email = credential.email
                                 let firstName = credential.fullName?.givenName
                                 let lastName = credential.fullName?.familyName
+                                
+                                let user = User(id: userId, email: email, firstName: firstName, lastName: lastName)
+                                authManager.saveUser(user)
+                                
 
                                 print("userId: \(userId)")
                                 print("email: \(String(describing: email))")

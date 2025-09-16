@@ -2,14 +2,36 @@
 //  MessagesView.swift
 //  syGroupTask
 //
-//  Created by Amritesh Kumar on 02/               
+//  Created by Amritesh Kumar on 02/09/25.
+//
+
 import SwiftUI
 
 struct MessagesView: View {
+    @EnvironmentObject var authViewModel: AuthManagerViewModel
     @State private var selectedFilter: String = "All"
+    @State private var showLoginView = false
     let filters = ["All", "Travelling", "Support"]
     
     var body: some View {
+        NavigationStack {
+            if authViewModel.isAuthenticated {
+                authenticatedMessagesView
+            } else {
+                NotLoginView(
+                    screen: "Log in to view your messages",
+                    tittle: "Messages from hosts and the Airbnb support team will appear here."
+                )
+                .navigationTitle("Messages")
+                .navigationBarTitleDisplayMode(.large)
+            }
+        }
+        .fullScreenCover(isPresented: $showLoginView) {
+            LoginSignUpView()
+        }
+    }
+    
+    private var authenticatedMessagesView: some View {
         VStack(alignment: .leading, spacing: 16) {
             
             HStack {
@@ -81,7 +103,7 @@ struct MessagesView: View {
                     .font(.system(size: 40))
                     .foregroundColor(.gray)
                 
-                Text("You don’t have any messages")
+                Text("You don't have any messages")
                     .font(.system(size: 16, weight: .semibold))
                 
                 Text("When you receive a new message, it will appear here.")
@@ -98,4 +120,5 @@ struct MessagesView: View {
 
 #Preview {
     MessagesView()
+        .environmentObject(AuthManagerViewModel())
 }
