@@ -9,82 +9,171 @@ import SwiftUI
 
 struct TripsView: View {
     @EnvironmentObject var authManager: AuthManagerViewModel
+    @StateObject private var cloudKitManager = CloudkitManagerViewModel()
     @State private var showLoginView = false
-    
+    @State private var showAddPropertySheet = false
+
     var body: some View {
         NavigationStack {
             if authManager.isAuthenticated {
-                authenticatedTripsView
+                myPropertiesView
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Text("My Properties")
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundColor(Theme.textPrimary)
+                        }
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button {
+                                showAddPropertySheet = true
+                            } label: {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(Theme.primaryColor)
+                            }
+                        }
+                    }
+                    .sheet(isPresented: $showAddPropertySheet) {
+                        AddPropertyView()
+                            .presentationDetents([.large])
+                            .onDisappear {
+                                cloudKitManager.fetchUserListings()
+                            }
+                    }
+                    .onAppear {
+                        cloudKitManager.fetchUserListings()
+                    }
             } else {
                 NotLoginView(
-                    screen: "No trips yet",
-                    tittle: "When you're ready to plan your next trip, we're here to help"
+                    screen: "My Properties",
+                    tittle:
+                        "Sign in to list your properties and connect with potential buyers"
                 )
-                .navigationTitle("Trips")
+                .navigationTitle("My Properties")
                 .navigationBarTitleDisplayMode(.large)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Login") {
+                            showLoginView = true
+                        }
+                        .foregroundColor(Theme.primaryColor)
+                    }
+                }
             }
         }
         .fullScreenCover(isPresented: $showLoginView) {
             LoginSignUpView()
         }
     }
-    
-    private var authenticatedTripsView: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("Trips")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(Theme.textPrimary)
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 20)
 
-            Spacer()
-
-            VStack(spacing: 32) {
-                Image("tripTimeline")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(maxWidth: 280, maxHeight: 280)
-
-                VStack(spacing: 16) {
-                    Text("Build the perfect trip")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundColor(Theme.textPrimary)
-                        .multilineTextAlignment(.center)
-
-                    Text(
-                        "Explore homes, experiences and services.\nWhen you book, your reservations will appear here."
-                    )
-                    .font(.system(size: 16))
-                    .foregroundColor(Theme.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
+    private var myPropertiesView: some View {
+        ScrollView {
+            if cloudKitManager.isLoading {
+                VStack {
+                    Spacer()
+                        .frame(height: 100)
+                    ProgressView("Loading properties...")
+                        .progressViewStyle(CircularProgressViewStyle())
+                    Spacer()
                 }
+                .frame(maxWidth: .infinity)
+            } else if cloudKitManager.userProperties.isEmpty {
+                emptyStateView
+            } else {
+                VStack(alignment: .leading) {
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.adaptive(minimum: 160), spacing: 16)
+                        ],
+                        spacing: 20
+                    ) {
+                        ForEach(cloudKitManager.userProperties) { property in
+                            NavigationLink(
+                                destination: CardsDetailView(
+                                    cardId: property.id
+                                )
+                            ) {
+                                propertyCard(for: property)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                }
+            }
+
+            if let errorMessage = cloudKitManager.errorMessage {
+                Text("Error: \(errorMessage)")
+                    .foregroundColor(.red)
+                    .padding()
+            }
+        }
+        .background(Theme.background)
+        .refreshable {
+            cloudKitManager.fetchUserListings()
+        }
+    }
+
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Spacer()
+                .frame(height: 80)
+
+            Image(systemName: "house")
+                .font(.system(size: 64))
+                .foregroundColor(Color(.systemGray3))
+
+            Text("No Properties Listed")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(Theme.textPrimary)
+
+            Text("Tap the + button to list your first property")
+                .font(.subheadline)
+                .foregroundColor(Theme.textSecondary)
+                .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
-                Button(action: {
-                    
-                }) {
-                    Text("Get started")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Theme.primaryColor)
-                        )
-                }
-                .padding(.horizontal, 60)
+            Button {
+                showAddPropertySheet = true
+            } label: {
+                Text("List a Property")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Theme.primaryColor)
+                    )
             }
+            .padding(.top, 12)
 
-            Spacer()
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.background)
+    }
+
+    private func propertyCard(for property: PropertyListing) -> some View {
+        CardsView(
+            flatName: property.title,
+            location: property.location,
+            cost: formattedPrice(for: property),
+            rating: 4.5,  
+            label: property.listingType.rawValue,
+            imageName: "",
+            imageURL: property.photoURLs.first
+        )
+    }
+
+    private func formattedPrice(for property: PropertyListing) -> String {
+        if property.listingType == .forSale {
+            return "$\(Int(property.price))"
+        } else {
+            return "$\(Int(property.price))/month"
+        }
     }
 }
 

@@ -226,12 +226,14 @@ struct CardsDetailView: View {
                     }
                     .padding(.horizontal)
 
+                    // Add extra padding at the bottom to ensure content doesn't get hidden behind the action bar
                     Spacer()
                         .frame(height: 100)
                 }
                 .padding(.vertical, 8)
             }
 
+            // Bottom action bar (floating above tab bar)
             VStack {
                 Divider()
                 HStack {
@@ -264,13 +266,19 @@ struct CardsDetailView: View {
                             .cornerRadius(12)
                     }
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.vertical, 10)
                 .background(Theme.background)
+                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
             }
         }
         .navigationBarTitleDisplayMode(.inline)
-        .ignoresSafeArea(edges: .bottom)
         .navigationBarBackButtonHidden()
+        // Remove the ignoresSafeArea modifier to respect the tab bar
+        // Add safeAreaInset instead to ensure proper spacing
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: 0)
+        }
     }
     
     private func getAmenityIcon(_ amenity: String) -> String {

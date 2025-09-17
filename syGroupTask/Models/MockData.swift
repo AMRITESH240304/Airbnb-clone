@@ -505,4 +505,8 @@ struct MockData {
             propertyType: "House"
         )
     }
+    
+
 }
+
+// Add this function to MockData.swift
