@@ -122,17 +122,3 @@ struct CardsView: View {
     }
 }
 
-#Preview {
-    CardsView(
-        flatName: "Flat in Puducherry",
-        location: "White Town, Puducherry",
-        cost: "₹3,251 for 2 nights",
-        rating: 4.83,
-        label: "Guest favourite",
-        imageName: "sample_room",
-        imageURL: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c"
-    )
-    .previewLayout(.sizeThatFits)
-    .padding()
-}
-

@@ -9,38 +9,30 @@ import Foundation
 import CloudKit
 
 struct PropertyListing: Identifiable {
-    // CKRecord ID for CloudKit
     var id: UUID
     var recordID: CKRecord.ID?
     
-    // Basic property information
     var title: String
     var category: String
     var location: String
     var description: String
     
-    // Listing type and pricing
     var listingType: ListingType
-    var price: Double // selling price or monthly rent
+    var price: Double
     
-    // Listing duration and status
-    var listingDuration: Int // in days
+    var listingDuration: Int
     var listingDate: Date
     var expirationDate: Date
     var status: ListingStatus
     
-    // User information
     var ownerID: String
     var ownerName: String
     
-    // Images
     var photoURLs: [String]
     
-    // Bids (if for sale)
     var bids: [Bid]?
     var highestBid: Double?
     
-    // CloudKit record conversion
     func toCKRecord() -> CKRecord {
         let record: CKRecord
         
@@ -69,12 +61,10 @@ struct PropertyListing: Identifiable {
             record["highestBid"] = highestBid
         }
         
-        // Bids will be stored in separate records with references
         
         return record
     }
     
-    // Create from CloudKit record
     static func fromCKRecord(_ record: CKRecord) -> PropertyListing? {
         guard
             let idString = record["id"] as? String,
@@ -122,7 +112,6 @@ struct PropertyListing: Identifiable {
     }
 }
 
-// Listing type enum
 enum ListingType: String, CaseIterable, Identifiable {
     case forSale = "For Sale"
     case forRent = "For Rent"
@@ -130,7 +119,6 @@ enum ListingType: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 }
 
-// Listing status enum
 enum ListingStatus: String, CaseIterable, Identifiable {
     case active = "Active"
     case pending = "Pending"
@@ -140,7 +128,6 @@ enum ListingStatus: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 }
 
-// Bid model
 struct Bid: Identifiable {
     var id: UUID
     var recordID: CKRecord.ID?
@@ -152,7 +139,6 @@ struct Bid: Identifiable {
     var timestamp: Date
     var status: BidStatus
     
-    // CloudKit record conversion
     func toCKRecord() -> CKRecord {
         let record: CKRecord
         
@@ -173,7 +159,6 @@ struct Bid: Identifiable {
         return record
     }
     
-    // Create from CloudKit record
     static func fromCKRecord(_ record: CKRecord) -> Bid? {
         guard
             let idString = record["id"] as? String,
@@ -203,7 +188,6 @@ struct Bid: Identifiable {
     }
 }
 
-// Bid status enum
 enum BidStatus: String, CaseIterable, Identifiable {
     case pending = "Pending"
     case accepted = "Accepted"

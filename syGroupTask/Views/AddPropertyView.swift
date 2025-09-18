@@ -6,39 +6,13 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct AddPropertyView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var cloudKitManager = CloudkitManagerViewModel()
-    
-    // Property details
-    @State private var propertyTitle = ""
-    @State private var propertyDescription = ""
-    @State private var propertyPrice = ""
-    @State private var selectedCategory = "House"
-    @State private var location = ""
-    @State private var listingDuration = 14 // Default 14 days
-    
-    // Property listing type
-    @State private var listingType = "For Sale"
-    let listingTypes = ["For Sale", "For Rent"]
-    
-    // Monthly rent (only for rental properties)
-    @State private var monthlyRent = ""
-    
-    // Photo URLs (limited to 6)
-    @State private var photoURLs: [String] = [""]
-    
-    // Alert states
-    @State private var showConfirmationAlert = false
-    @State private var showSuccessAlert = false
-    @State private var showErrorAlert = false
-    
-    // Property categories
-    let categories = ["House", "Apartment", "Villa", "Bungalow", "Studio", "Commercial", "Land/Farm"]
-    
-    // Add a property to track if listing was added successfully
+    @StateObject private var viewModel = AddPropertyViewModel()
     @Binding var wasListingAdded: Bool
+    @State private var showLocationPicker = false
     
     // For preview and default initialization without binding
     init(wasListingAdded: Binding<Bool> = .constant(false)) {
@@ -57,7 +31,7 @@ struct AddPropertyView: View {
                                 .font(.subheadline)
                                 .foregroundColor(Theme.textSecondary)
                             
-                            TextField("Enter property title", text: $propertyTitle)
+                            TextField("Enter property title", text: $viewModel.propertyTitle)
                                 .padding()
                                 .background(Color(.systemGray6))
                                 .cornerRadius(8)
@@ -69,22 +43,22 @@ struct AddPropertyView: View {
                                 .font(.subheadline)
                                 .foregroundColor(Theme.textSecondary)
                             
-                            Picker("Listing Type", selection: $listingType) {
-                                ForEach(listingTypes, id: \.self) { type in
+                            Picker("Listing Type", selection: $viewModel.listingType) {
+                                ForEach(viewModel.listingTypes, id: \.self) { type in
                                     Text(type).tag(type)
                                 }
                             }
                             .pickerStyle(SegmentedPickerStyle())
                         }
                         
-                        // Category
+                        // Main Category
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Property Type")
                                 .font(.subheadline)
                                 .foregroundColor(Theme.textSecondary)
                             
-                            Picker("Category", selection: $selectedCategory) {
-                                ForEach(categories, id: \.self) { category in
+                            Picker("Category", selection: $viewModel.selectedCategory) {
+                                ForEach(viewModel.mainCategories, id: \.self) { category in
                                     Text(category).tag(category)
                                 }
                             }
@@ -93,28 +67,107 @@ struct AddPropertyView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(Color(.systemGray6))
                             .cornerRadius(8)
+                            .onChange(of: viewModel.selectedCategory) { _ in
+                                viewModel.categoryChanged()
+                            }
                         }
                         
-                        // Location
+                        // Subcategory for Commercial Property
+                        if viewModel.selectedCategory == "Commercial Property" {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Commercial Property Type")
+                                    .font(.subheadline)
+                                    .foregroundColor(Theme.textSecondary)
+                                
+                                Picker("Subcategory", selection: $viewModel.selectedSubCategory) {
+                                    Text("Select type").tag("")
+                                    ForEach(viewModel.commercialSubcategories, id: \.self) { subcategory in
+                                        Text(subcategory).tag(subcategory)
+                                    }
+                                }
+                                .pickerStyle(MenuPickerStyle())
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                            }
+                        }
+                        
+                        // Student Accommodation specific fields
+                        if viewModel.isStudentAccommodation {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Gender Preference")
+                                    .font(.subheadline)
+                                    .foregroundColor(Theme.textSecondary)
+                                
+                                Picker("Gender", selection: $viewModel.genderPreference) {
+                                    ForEach(viewModel.genderOptions, id: \.self) { option in
+                                        Text(option).tag(option)
+                                    }
+                                }
+                                .pickerStyle(SegmentedPickerStyle())
+                            }
+                        }
+                        
+                        // Overseas Property specific fields
+                        if viewModel.isOverseas {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Country")
+                                    .font(.subheadline)
+                                    .foregroundColor(Theme.textSecondary)
+                                
+                                TextField("Enter country", text: $viewModel.country)
+                                    .padding()
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(8)
+                            }
+                        }
+                        
+                        // Location with map integration
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Location")
                                 .font(.subheadline)
                                 .foregroundColor(Theme.textSecondary)
                             
-                            TextField("Enter property location", text: $location)
+                            TextField("Enter property location", text: $viewModel.location)
                                 .padding()
                                 .background(Color(.systemGray6))
                                 .cornerRadius(8)
+                            
+                            Button {
+                                showLocationPicker = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "map")
+                                    Text(viewModel.hasSetCoordinate ? "Change Location on Map" : "Set Location on Map")
+                                }
+                                .foregroundColor(Theme.primaryColor)
+                                .padding(.vertical, 4)
+                            }
+                            
+                            if viewModel.hasSetCoordinate {
+                                VStack {
+                                    Map {
+                                        Marker("Property Location", coordinate: viewModel.coordinate)
+                                    }
+                                    .frame(height: 150)
+                                    .cornerRadius(8)
+                                    
+                                    Text("Coordinates: \(String(format: "%.5f", viewModel.coordinate.latitude)), \(String(format: "%.5f", viewModel.coordinate.longitude))")
+                                        .font(.caption)
+                                        .foregroundColor(Theme.textSecondary)
+                                }
+                            }
                         }
                         
                         // Price (for sale) or Monthly Rent (for rent)
-                        if listingType == "For Sale" {
+                        if viewModel.listingType == "For Sale" {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Asking Price ($)")
                                     .font(.subheadline)
                                     .foregroundColor(Theme.textSecondary)
                                 
-                                TextField("Enter asking price", text: $propertyPrice)
+                                TextField("Enter asking price", text: $viewModel.propertyPrice)
                                     .keyboardType(.decimalPad)
                                     .padding()
                                     .background(Color(.systemGray6))
@@ -126,7 +179,7 @@ struct AddPropertyView: View {
                                     .font(.subheadline)
                                     .foregroundColor(Theme.textSecondary)
                                 
-                                TextField("Enter monthly rent", text: $monthlyRent)
+                                TextField("Enter monthly rent", text: $viewModel.monthlyRent)
                                     .keyboardType(.decimalPad)
                                     .padding()
                                     .background(Color(.systemGray6))
@@ -140,7 +193,7 @@ struct AddPropertyView: View {
                                 .font(.subheadline)
                                 .foregroundColor(Theme.textSecondary)
                             
-                            Picker("", selection: $listingDuration) {
+                            Picker("", selection: $viewModel.listingDuration) {
                                 Text("7 days").tag(7)
                                 Text("14 days").tag(14)
                                 Text("30 days").tag(30)
@@ -149,20 +202,18 @@ struct AddPropertyView: View {
                             .pickerStyle(SegmentedPickerStyle())
                         }
                         
-                        // Description
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Description")
                                 .font(.subheadline)
                                 .foregroundColor(Theme.textSecondary)
                             
-                            TextEditor(text: $propertyDescription)
+                            TextEditor(text: $viewModel.propertyDescription)
                                 .frame(minHeight: 100)
                                 .padding(4)
                                 .background(Color(.systemGray6))
                                 .cornerRadius(8)
                         }
                         
-                        // Photo URLs (up to 6)
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Text("Photo URLs (max 6)")
@@ -171,11 +222,9 @@ struct AddPropertyView: View {
                                 
                                 Spacer()
                                 
-                                if photoURLs.count < 6 {
+                                if viewModel.photoURLs.count < 6 {
                                     Button {
-                                        if photoURLs.count < 6 {
-                                            photoURLs.append("")
-                                        }
+                                        viewModel.addPhotoURL()
                                     } label: {
                                         Image(systemName: "plus.circle.fill")
                                             .foregroundColor(Theme.primaryColor)
@@ -183,16 +232,16 @@ struct AddPropertyView: View {
                                 }
                             }
                             
-                            ForEach(0..<photoURLs.count, id: \.self) { index in
+                            ForEach(0..<viewModel.photoURLs.count, id: \.self) { index in
                                 HStack {
-                                    TextField("Enter photo URL #\(index + 1)", text: $photoURLs[index])
+                                    TextField("Enter photo URL #\(index + 1)", text: $viewModel.photoURLs[index])
                                         .padding()
                                         .background(Color(.systemGray6))
                                         .cornerRadius(8)
                                     
-                                    if photoURLs.count > 1 {
+                                    if viewModel.photoURLs.count > 1 {
                                         Button {
-                                            photoURLs.remove(at: index)
+                                            viewModel.removePhotoURL(at: index)
                                         } label: {
                                             Image(systemName: "minus.circle.fill")
                                                 .foregroundColor(.red)
@@ -202,11 +251,10 @@ struct AddPropertyView: View {
                             }
                         }
                         
-                        // Submit button
                         Button(action: {
-                            showConfirmationAlert = true
+                            viewModel.showConfirmationAlert = true
                         }) {
-                            if cloudKitManager.isLoading {
+                            if viewModel.isLoading {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
@@ -221,7 +269,7 @@ struct AddPropertyView: View {
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(Theme.primaryColor)
                         )
-                        .disabled(cloudKitManager.isLoading)
+                        .disabled(viewModel.isLoading)
                         .padding(.top, 20)
                     }
                     .padding(.horizontal, 20)
@@ -238,69 +286,37 @@ struct AddPropertyView: View {
                     .foregroundColor(Theme.primaryColor)
                 }
             }
-            .alert("Confirm Property Details", isPresented: $showConfirmationAlert) {
+            .sheet(isPresented: $showLocationPicker) {
+                LocationPickerView(
+                    coordinate: $viewModel.coordinate,
+                    location: $viewModel.location,
+                    hasSetCoordinate: $viewModel.hasSetCoordinate
+                )
+                .presentationDetents([.large])
+            }
+            .alert("Confirm Property Details", isPresented: $viewModel.showConfirmationAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Confirm") {
-                    // Create the form data
-                    let formData = PropertyFormData.fromFormData(
-                        title: propertyTitle,
-                        category: selectedCategory,
-                        location: location,
-                        description: propertyDescription,
-                        listingType: listingType,
-                        price: propertyPrice,
-                        monthlyRent: monthlyRent,
-                        listingDuration: listingDuration,
-                        photoURLs: photoURLs
-                    )
-                    
-                    // Save to CloudKit
-                    cloudKitManager.createPropertyListing(from: formData) { result in
-                        switch result {
-                        case .success(_):
-                            showSuccessAlert = true
-                        case .failure(_):
-                            showErrorAlert = true
-                        }
+                    viewModel.submitProperty {
                     }
                 }
             } message: {
-                Text(confirmationMessage)
+                Text(viewModel.confirmationMessage)
             }
-            .alert("Property Listed Successfully", isPresented: $showSuccessAlert) {
+            .alert("Property Listed Successfully", isPresented: $viewModel.showSuccessAlert) {
                 Button("OK") {
-                    wasListingAdded = true
+                    wasListingAdded = viewModel.wasListingAdded
                     dismiss()
                 }
             } message: {
                 Text("Your property has been listed and is now visible to potential buyers.")
             }
-            .alert("Error", isPresented: $showErrorAlert) {
+            .alert("Error", isPresented: $viewModel.showErrorAlert) {
                 Button("OK") { }
             } message: {
-                Text(cloudKitManager.errorMessage ?? "An unknown error occurred")
+                Text(viewModel.errorMessage ?? "An unknown error occurred")
             }
         }
-    }
-    
-    // Create a formatted confirmation message from all the property details
-    private var confirmationMessage: String {
-        var message = """
-        Title: \(propertyTitle)
-        Type: \(selectedCategory)
-        Location: \(location)
-        Listing Type: \(listingType)
-        """
-        
-        if listingType == "For Sale" {
-            message += "\nAsking Price: $\(propertyPrice)"
-        } else {
-            message += "\nMonthly Rent: $\(monthlyRent)"
-        }
-        
-        message += "\nListing Duration: \(listingDuration) days"
-        
-        return message
     }
 }
 

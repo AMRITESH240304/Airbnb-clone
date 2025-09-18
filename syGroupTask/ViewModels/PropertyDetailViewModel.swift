@@ -24,19 +24,14 @@ class PropertyDetailViewModel: ObservableObject {
         preloadPropertyImages()
     }
     
-    // MARK: - Public Methods
-    
     func refreshPropertyData() {
         isLoading = true
         
         Task {
-            // Simulate data refresh
-            try await Task.sleep(nanoseconds: 500_000_000) // 0.5 second
+            try await Task.sleep(nanoseconds: 500_000_000)
             
-            // Reload property details
             propertyDetail = MockData.getPropertyDetailOrDefault(for: cardId)
             
-            // Preload images after refresh
             preloadPropertyImages()
             
             isLoading = false
@@ -85,15 +80,11 @@ class PropertyDetailViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Private Methods
-    
     private func preloadPropertyImages() {
         Task {
-            // Preload all property images
             let imageUrls = propertyDetail.images
             imageCache.preloadImages(imageUrls)
             
-            // Also preload host profile image
             imageCache.preloadImages([propertyDetail.host.profileImage])
         }
     }
