@@ -13,6 +13,9 @@ struct TripsView: View {
     @State private var showLoginView = false
     @State private var showAddPropertySheet = false
 
+    // Add state for tracking if a new property was added
+    @State private var wasNewPropertyAdded = false
+
     var body: some View {
         NavigationStack {
             if authManager.isAuthenticated {
@@ -35,13 +38,18 @@ struct TripsView: View {
                         }
                     }
                     .sheet(isPresented: $showAddPropertySheet) {
-                        AddPropertyView()
+                        AddPropertyView(wasListingAdded: $wasNewPropertyAdded)
                             .presentationDetents([.large])
                             .onDisappear {
-                                cloudKitManager.fetchUserListings()
+                                // Only refresh if a property was successfully added
+                                if wasNewPropertyAdded {
+                                    cloudKitManager.fetchUserListings(forceRefresh: true)
+                                    wasNewPropertyAdded = false
+                                }
                             }
                     }
                     .onAppear {
+                        // Only fetch if not already loaded
                         cloudKitManager.fetchUserListings()
                     }
             } else {
@@ -112,7 +120,7 @@ struct TripsView: View {
         }
         .background(Theme.background)
         .refreshable {
-            cloudKitManager.fetchUserListings()
+            cloudKitManager.fetchUserListings(forceRefresh: true)
         }
     }
 

@@ -10,6 +10,9 @@ import Combine
 import Foundation
 
 class CloudkitManagerViewModel: ObservableObject {
+    // Add these properties
+    @Published var hasLoadedUserProperties = false
+    @Published var hasLoadedAllProperties = false
     
     private let container: CKContainer
     private let publicDB: CKDatabase
@@ -137,7 +140,11 @@ class CloudkitManagerViewModel: ObservableObject {
         }
     }
 
-    func fetchAllListings() {
+    func fetchAllListings(forceRefresh: Bool = false) {
+        if hasLoadedAllProperties && !forceRefresh && !allProperties.isEmpty {
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
 
@@ -170,6 +177,7 @@ class CloudkitManagerViewModel: ObservableObject {
                     self.allProperties = fetchedRecords.compactMap {
                         PropertyListing.fromCKRecord($0)
                     }
+                    self.hasLoadedAllProperties = true
                 case .failure(let error):
                     self.errorMessage = error.localizedDescription
                 }
@@ -179,7 +187,12 @@ class CloudkitManagerViewModel: ObservableObject {
         publicDB.add(operation)
     }
 
-    func fetchUserListings() {
+    func fetchUserListings(forceRefresh: Bool = false) {
+        // Skip if already loaded and no force refresh requested
+        if hasLoadedUserProperties && !forceRefresh && !userProperties.isEmpty {
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
 
@@ -220,6 +233,7 @@ class CloudkitManagerViewModel: ObservableObject {
                             self.userProperties = fetchedRecords.compactMap {
                                 PropertyListing.fromCKRecord($0)
                             }
+                            self.hasLoadedUserProperties = true
                         case .failure(let error):
                             self.errorMessage = error.localizedDescription
                         }

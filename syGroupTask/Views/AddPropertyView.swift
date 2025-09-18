@@ -37,6 +37,14 @@ struct AddPropertyView: View {
     // Property categories
     let categories = ["House", "Apartment", "Villa", "Bungalow", "Studio", "Commercial", "Land/Farm"]
     
+    // Add a property to track if listing was added successfully
+    @Binding var wasListingAdded: Bool
+    
+    // For preview and default initialization without binding
+    init(wasListingAdded: Binding<Bool> = .constant(false)) {
+        self._wasListingAdded = wasListingAdded
+    }
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -261,6 +269,7 @@ struct AddPropertyView: View {
             }
             .alert("Property Listed Successfully", isPresented: $showSuccessAlert) {
                 Button("OK") {
+                    wasListingAdded = true
                     dismiss()
                 }
             } message: {
