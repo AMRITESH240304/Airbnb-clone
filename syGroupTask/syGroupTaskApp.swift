@@ -10,10 +10,12 @@ import SwiftUI
 @main
 struct syGroupTaskApp: App {
     @StateObject private var authViewModel = AuthManagerViewModel()
+    @StateObject private var cloudKitViewModel = CloudkitManagerViewModel()
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(authViewModel)
+                .environmentObject(cloudKitViewModel)
         }
     }
 }

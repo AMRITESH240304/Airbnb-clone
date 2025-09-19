@@ -50,25 +50,38 @@ class AddPropertyViewModel: ObservableObject {
     
     // Property categories - expanded with more options
     let mainCategories = [
-        "House", 
-        "Apartment", 
-        "Villa/Bungalow", 
-        "Studio", 
-        "Commercial Property", 
-        "Land/Farm", 
+        "House",
+        "Apartment",
+        "Villa/Bungalow",
+        "Studio",
+        "Commercial Property",
+        "Land/Farm",
         "Student Accommodation",
         "Overseas Property",
         "Retirement Home"
     ]
     
     let commercialSubcategories = [
-        "Office Space", 
-        "Retail Store", 
-        "Industrial", 
-        "Warehouse", 
-        "Restaurant", 
-        "Hotel/Motel",
-        "Other"
+        "Office Space",
+        "Retail Shop / Storefront",
+        "Industrial Property",
+        "Warehouse / Storage Facility",
+        "Restaurant / Café Space",
+        "Hotel / Motel / Hospitality Property",
+        "Mixed-Use Development",
+        "Other Commercial Property"
+    ]
+    
+    let professionalsCategories = [
+        "Estate Agents",
+        "Letting Agents",
+        "Real Estate Consultants"
+    ]
+    
+    let servicesCategories = [
+        "Consultancy Services",
+        "Business Partnerships / Collaborations",
+        "Franchise Opportunities"
     ]
     
     func buildFullCategory() -> String {

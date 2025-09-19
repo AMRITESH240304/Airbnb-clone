@@ -10,12 +10,12 @@ import SwiftUI
 
 @MainActor
 class ExploreViewModel: ObservableObject {
-    @Published var selectedFilter: String = "Buy"
+    @Published var selectedFilter: String = "Real Estate"
     @Published var isLoading = false
     
     private let imageCache = ImageCacheManager.shared
     
-    let filters = ["Buy", "Sell", "Rent"]
+    let filters = ["Real Estate", "Professionals", "Services"]
     
     init() {
         preloadImages()
@@ -59,11 +59,11 @@ class ExploreViewModel: ObservableObject {
             let imageUrls: [String]
             
             switch selectedFilter {
-            case "Buy":
+            case "Real Estate":
                 imageUrls = getHomesImageUrls()
-            case "Sell":
+            case "Professionals":
                 imageUrls = getExperienceImageUrls()
-            case "Rent":
+            case "Services":
                 imageUrls = getServicesImageUrls()
             default:
                 imageUrls = []

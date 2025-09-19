@@ -147,15 +147,20 @@ class CloudkitManagerViewModel: ObservableObject {
         
         isLoading = true
         errorMessage = nil
-
+        
         let predicate = NSPredicate(value: true)
-        let query = CKQuery(recordType: "PropertyListing", predicate: predicate)
-
+        let query = CKQuery(
+            recordType: "PropertyListing",
+            predicate: predicate
+        )
+        
+        query.sortDescriptors = [NSSortDescriptor(key: "listingDate", ascending: false)]
+        
         let operation = CKQueryOperation(query: query)
         operation.resultsLimit = CKQueryOperation.maximumResults
-
+        
         var fetchedRecords: [CKRecord] = []
-
+        
         operation.recordMatchedBlock = { (_, result) in
             switch result {
             case .success(let record):
@@ -166,12 +171,12 @@ class CloudkitManagerViewModel: ObservableObject {
                 }
             }
         }
-
+        
         operation.queryResultBlock = { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.isLoading = false
-
+                
                 switch result {
                 case .success:
                     self.allProperties = fetchedRecords.compactMap {
@@ -183,7 +188,7 @@ class CloudkitManagerViewModel: ObservableObject {
                 }
             }
         }
-
+        
         publicDB.add(operation)
     }
 

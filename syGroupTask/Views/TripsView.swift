@@ -13,7 +13,6 @@ struct TripsView: View {
     @State private var showLoginView = false
     @State private var showAddPropertySheet = false
 
-    // Add state for tracking if a new property was added
     @State private var wasNewPropertyAdded = false
 
     var body: some View {
@@ -49,7 +48,6 @@ struct TripsView: View {
                             }
                     }
                     .onAppear {
-                        // Only fetch if not already loaded
                         cloudKitManager.fetchUserListings()
                     }
             } else {
