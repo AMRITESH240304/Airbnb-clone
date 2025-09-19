@@ -9,7 +9,7 @@ import SwiftUI
 
 struct WishlistView: View {
     @EnvironmentObject var authManager: AuthManagerViewModel
-    let images = ["sample1", "sample2", "sample3", "sample4"]
+    @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
     @State private var showLoginView = false
 
     var body: some View {
@@ -29,66 +29,62 @@ struct WishlistView: View {
         .fullScreenCover(isPresented: $showLoginView) {
             LoginSignUpView()
         }
+        .onAppear {
+            if authManager.isAuthenticated {
+                cloudkitViewModel.fetchUserWishlist()
+            }
+        }
     }
 
     private var authenticatedWishListView: some View {
         VStack(alignment: .leading) {
-            VStack(alignment: .leading, spacing: 8) {
-                LazyVGrid(
-                    columns: Array(
-                        repeating: GridItem(.flexible(), spacing: 0),
-                        count: 2
-                    ),
-                    spacing: 0
-                ) {
-                    ForEach(MockData.imageURLs, id: \.self) { urlString in
-                        if let url = URL(string: urlString) {
-                            AsyncImage(url: url) { phase in
-                                switch phase {
-                                case .empty:
-                                    ProgressView()
-                                        .frame(width: 60, height: 60)
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 60, height: 60)
-                                        .clipped()
-                                case .failure:
-                                    Image(systemName: "photo")
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 60, height: 60)
-                                        .clipped()
-                                @unknown default:
-                                    EmptyView()
-                                }
+            if cloudkitViewModel.isLoading && cloudkitViewModel.wishlistedProperties.isEmpty {
+                ProgressView("Loading wishlist...")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+            } else if cloudkitViewModel.wishlistedProperties.isEmpty {
+                VStack(spacing: 16) {
+                    Image(systemName: "heart")
+                        .font(.system(size: 60))
+                        .foregroundColor(.gray)
+                        .padding()
+                    
+                    Text("No items in your wishlist")
+                        .font(.headline)
+                        .foregroundColor(Theme.textPrimary)
+                    
+                    Text("Start exploring properties and save your favorites here")
+                        .font(.subheadline)
+                        .foregroundColor(Theme.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 16) {
+                        ForEach(cloudkitViewModel.wishlistedProperties) { property in
+                            NavigationLink {
+                                PropertyDetailView(property: property)
+                            } label: {
+                                PropertyListItemView(property: property)
                             }
                         }
                     }
+                    .padding()
                 }
-                .frame(width: 160, height: 160)
-                .cornerRadius(12)
-
-                Text("Recently viewed")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Theme.textPrimary)
-
-                Text("Today")
-                    .font(.system(size: 14))
-                    .foregroundColor(Theme.textSecondary)
             }
-
-            Spacer()
         }
         .navigationTitle("Wishlists")
         .navigationBarTitleDisplayMode(.large)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 20)
+        .refreshable {
+            cloudkitViewModel.fetchUserWishlist(forceRefresh: true)
+        }
     }
 }
 
 #Preview {
     WishlistView()
         .environmentObject(AuthManagerViewModel())
+        .environmentObject(CloudkitManagerViewModel())
 }

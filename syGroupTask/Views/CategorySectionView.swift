@@ -52,24 +52,47 @@ struct CategorySectionView: View {
 // MARK: - Property Card Component
 struct PropertyCardView: View {
     let property: PropertyListing
+    @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
+    @State private var isWishlisted: Bool = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Property Image
-            AsyncImage(url: URL(string: property.photoURLs.first ?? "")) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } placeholder: {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.3))
-                    .overlay(
-                        Image(systemName: "house")
-                            .foregroundColor(.gray)
-                    )
+            // Property Image with Heart Icon
+            ZStack {
+                AsyncImage(url: URL(string: property.photoURLs.first ?? "")) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .overlay(
+                            Image(systemName: "house")
+                                .foregroundColor(.gray)
+                        )
+                }
+                .frame(width: 240, height: 160)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                
+                // Wishlist Heart Icon
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            toggleWishlist()
+                        } label: {
+                            Image(systemName: isWishlisted ? "heart.fill" : "heart")
+                                .foregroundColor(isWishlisted ? .red : .white)
+                                .font(.system(size: 18, weight: .medium))
+                                .padding(8)
+                                .background(Color.black.opacity(0.4))
+                                .clipShape(Circle())
+                        }
+                    }
+                    Spacer()
+                }
+                .padding(8)
             }
-            .frame(width: 240, height: 160)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(property.title)
@@ -104,5 +127,37 @@ struct PropertyCardView: View {
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .onAppear {
+            updateWishlistStatus()
+        }
+        .onChange(of: cloudkitViewModel.wishlistItems) { _ in
+            updateWishlistStatus()
+        }
+    }
+    
+    private func updateWishlistStatus() {
+        isWishlisted = cloudkitViewModel.isPropertyInWishlist(property)
+    }
+    
+    private func toggleWishlist() {
+        if isWishlisted {
+            cloudkitViewModel.removeFromWishlist(property: property) { result in
+                switch result {
+                case .success:
+                    print("Removed from wishlist")
+                case .failure(let error):
+                    print("Failed to remove from wishlist: \(error)")
+                }
+            }
+        } else {
+            cloudkitViewModel.addToWishlist(property: property) { result in
+                switch result {
+                case .success:
+                    print("Added to wishlist")
+                case .failure(let error):
+                    print("Failed to add to wishlist: \(error)")
+                }
+            }
+        }
     }
 }

@@ -10,10 +10,12 @@ import Combine
 import Foundation
 
 class CloudkitManagerViewModel: ObservableObject {
-    // Add these properties
     @Published var hasLoadedUserProperties = false
     @Published var hasLoadedAllProperties = false
-    
+    @Published var wishlistItems: [Wishlist] = []
+    @Published var wishlistedProperties: [PropertyListing] = []
+    @Published var hasLoadedWishlist = false
+
     private let container: CKContainer
     private let publicDB: CKDatabase
     private let privateDB: CKDatabase
@@ -37,18 +39,12 @@ class CloudkitManagerViewModel: ObservableObject {
             }
 
             guard let recordID = recordID else {
-                completion(
-                    .failure(
-                        NSError(
-                            domain: "CloudKitManager",
-                            code: 1,
-                            userInfo: [
-                                NSLocalizedDescriptionKey:
-                                    "Failed to fetch user record ID"
-                            ]
-                        )
-                    )
+                let error = NSError(
+                    domain: "CloudKitManager",
+                    code: 1,
+                    userInfo: [NSLocalizedDescriptionKey: "Unable to fetch user record ID"]
                 )
+                completion(.failure(error))
                 return
             }
 
@@ -144,23 +140,25 @@ class CloudkitManagerViewModel: ObservableObject {
         if hasLoadedAllProperties && !forceRefresh && !allProperties.isEmpty {
             return
         }
-        
+
         isLoading = true
         errorMessage = nil
-        
+
         let predicate = NSPredicate(value: true)
         let query = CKQuery(
             recordType: "PropertyListing",
             predicate: predicate
         )
-        
-        query.sortDescriptors = [NSSortDescriptor(key: "listingDate", ascending: false)]
-        
+
+        query.sortDescriptors = [
+            NSSortDescriptor(key: "listingDate", ascending: false)
+        ]
+
         let operation = CKQueryOperation(query: query)
         operation.resultsLimit = CKQueryOperation.maximumResults
-        
+
         var fetchedRecords: [CKRecord] = []
-        
+
         operation.recordMatchedBlock = { (_, result) in
             switch result {
             case .success(let record):
@@ -171,12 +169,12 @@ class CloudkitManagerViewModel: ObservableObject {
                 }
             }
         }
-        
+
         operation.queryResultBlock = { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 self.isLoading = false
-                
+
                 switch result {
                 case .success:
                     self.allProperties = fetchedRecords.compactMap {
@@ -188,16 +186,15 @@ class CloudkitManagerViewModel: ObservableObject {
                 }
             }
         }
-        
+
         publicDB.add(operation)
     }
 
     func fetchUserListings(forceRefresh: Bool = false) {
-        // Skip if already loaded and no force refresh requested
         if hasLoadedUserProperties && !forceRefresh && !userProperties.isEmpty {
             return
         }
-        
+
         isLoading = true
         errorMessage = nil
 
@@ -256,35 +253,35 @@ class CloudkitManagerViewModel: ObservableObject {
         }
     }
 
-    func placeBid(
-        on property: PropertyListing,
-        amount: Double,
-        completion: @escaping (Result<Bid, Error>) -> Void
-    ) {
-        isLoading = true
+    // MARK: - Wishlist Methods
 
+    func addToWishlist(
+        property: PropertyListing,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
         fetchUserID { [weak self] result in
             guard let self = self else { return }
 
             switch result {
             case .success(let userID):
-                let bid = Bid(
+                // Check if already in wishlist
+                if self.wishlistItems.contains(where: { $0.propertyID == property.id && $0.ownerID == userID }) {
+                    completion(.success(()))
+                    return
+                }
+
+                let wishlistItem = Wishlist(
                     id: UUID(),
                     recordID: nil,
                     propertyID: property.id,
-                    bidderID: userID,
-                    bidderName: "Current User",
-                    amount: amount,
-                    timestamp: Date(),
-                    status: .pending
+                    ownerID: userID,
+                    dateAdded: Date()
                 )
 
-                let record = bid.toCKRecord()
+                let record = wishlistItem.toCKRecord()
 
-                self.publicDB.save(record) { (savedRecord, error) in
+                self.privateDB.save(record) { (savedRecord, error) in
                     DispatchQueue.main.async {
-                        self.isLoading = false
-
                         if let error = error {
                             self.errorMessage = error.localizedDescription
                             completion(.failure(error))
@@ -294,34 +291,28 @@ class CloudkitManagerViewModel: ObservableObject {
                         guard let savedRecord = savedRecord else {
                             let error = NSError(
                                 domain: "CloudKitManager",
-                                code: 3,
-                                userInfo: [
-                                    NSLocalizedDescriptionKey:
-                                        "Failed to save bid"
-                                ]
+                                code: 6,
+                                userInfo: [NSLocalizedDescriptionKey: "Failed to save wishlist item"]
                             )
-                            self.errorMessage = error.localizedDescription
                             completion(.failure(error))
                             return
                         }
 
-                        var savedBid = bid
-                        savedBid.recordID = savedRecord.recordID
+                        var savedWishlistItem = wishlistItem
+                        savedWishlistItem.recordID = savedRecord.recordID
+                        self.wishlistItems.append(savedWishlistItem)
 
-                        self.updatePropertyHighestBid(
-                            property: property,
-                            newBid: amount
-                        ) { _ in
-                            
+                        // Add to wishlisted properties if not already there
+                        if !self.wishlistedProperties.contains(where: { $0.id == property.id }) {
+                            self.wishlistedProperties.append(property)
                         }
 
-                        completion(.success(savedBid))
+                        completion(.success(()))
                     }
                 }
 
             case .failure(let error):
                 DispatchQueue.main.async {
-                    self.isLoading = false
                     self.errorMessage = error.localizedDescription
                     completion(.failure(error))
                 }
@@ -329,70 +320,124 @@ class CloudkitManagerViewModel: ObservableObject {
         }
     }
 
-    private func updatePropertyHighestBid(
-        property: PropertyListing,
-        newBid: Double,
-        completion: @escaping (Result<Void, Error>) -> Void
-    ) {
-        guard let recordID = property.recordID else {
-            let error = NSError(
-                domain: "CloudKitManager",
-                code: 4,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Property record ID is missing"
-                ]
-            )
-            completion(.failure(error))
-            return
-        }
+    func removeFromWishlist(property: PropertyListing, completion: @escaping (Result<Void, Error>) -> Void) {
+        fetchUserID { [weak self] result in
+            guard let self = self else { return }
 
-        publicDB.fetch(withRecordID: recordID) { record, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-
-            guard let record = record else {
-                let error = NSError(
-                    domain: "CloudKitManager",
-                    code: 5,
-                    userInfo: [
-                        NSLocalizedDescriptionKey:
-                            "Failed to fetch property record"
-                    ]
-                )
-                completion(.failure(error))
-                return
-            }
-
-            let currentHighestBid = record["highestBid"] as? Double ?? 0.0
-
-            if newBid > currentHighestBid {
-                record["highestBid"] = newBid
-
-                self.publicDB.save(record) { _, error in
-                    if let error = error {
-                        completion(.failure(error))
-                        return
-                    }
-
+            switch result {
+            case .success(let userID):
+                guard let wishlistItem = self.wishlistItems.first(where: {
+                    $0.propertyID == property.id && $0.ownerID == userID
+                }),
+                let recordID = wishlistItem.recordID else {
                     completion(.success(()))
+                    return
                 }
-            } else {
-                completion(.success(()))
+
+                self.privateDB.delete(withRecordID: recordID) { (deletedRecordID, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            self.errorMessage = error.localizedDescription
+                            completion(.failure(error))
+                            return
+                        }
+
+                        // Remove from local arrays
+                        self.wishlistItems.removeAll { $0.id == wishlistItem.id }
+                        self.wishlistedProperties.removeAll { $0.id == property.id }
+
+                        completion(.success(()))
+                    }
+                }
+
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                    completion(.failure(error))
+                }
             }
         }
     }
 
-    func fetchBidsForProperty(
-        _ property: PropertyListing,
-        completion: @escaping (Result<[Bid], Error>) -> Void
-    ) {
-        let predicate = NSPredicate(
-            format: "propertyID == %@",
-            property.id.uuidString
-        )
-        let query = CKQuery(recordType: "Bid", predicate: predicate)
+    func fetchUserWishlist(forceRefresh: Bool = false) {
+        if hasLoadedWishlist && !forceRefresh && !wishlistItems.isEmpty {
+            return
+        }
+
+        isLoading = true
+        errorMessage = nil
+
+        fetchUserID { [weak self] result in
+            guard let self = self else { return }
+
+            switch result {
+            case .success(let userID):
+                let predicate = NSPredicate(format: "ownerID == %@", userID)
+                let query = CKQuery(recordType: "Wishlist", predicate: predicate)
+                query.sortDescriptors = [NSSortDescriptor(key: "dateAdded", ascending: false)]
+
+                let operation = CKQueryOperation(query: query)
+                operation.resultsLimit = CKQueryOperation.maximumResults
+
+                var fetchedRecords: [CKRecord] = []
+
+                operation.recordMatchedBlock = { (_, result) in
+                    switch result {
+                    case .success(let record):
+                        fetchedRecords.append(record)
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            self.errorMessage = error.localizedDescription
+                        }
+                    }
+                }
+
+                operation.queryResultBlock = { [weak self] result in
+                    DispatchQueue.main.async {
+                        guard let self = self else { return }
+                        self.isLoading = false
+
+                        switch result {
+                        case .success:
+                            self.wishlistItems = fetchedRecords.compactMap {
+                                Wishlist.fromCKRecord($0)
+                            }
+                            self.hasLoadedWishlist = true
+
+                            // Fetch the actual properties for the wishlist
+                            self.fetchWishlistedProperties()
+
+                        case .failure(let error):
+                            self.errorMessage = error.localizedDescription
+                        }
+                    }
+                }
+
+                self.privateDB.add(operation)
+
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    func isPropertyInWishlist(_ property: PropertyListing) -> Bool {
+        return wishlistItems.contains { $0.propertyID == property.id }
+    }
+
+    private func fetchWishlistedProperties() {
+        let propertyIDs = wishlistItems.map { $0.propertyID.uuidString }
+
+        guard !propertyIDs.isEmpty else {
+            wishlistedProperties = []
+            return
+        }
+
+        let predicate = NSPredicate(format: "id IN %@", propertyIDs)
+        let query = CKQuery(recordType: "PropertyListing", predicate: predicate)
 
         let operation = CKQueryOperation(query: query)
         operation.resultsLimit = CKQueryOperation.maximumResults
@@ -405,26 +450,26 @@ class CloudkitManagerViewModel: ObservableObject {
                 fetchedRecords.append(record)
             case .failure(let error):
                 DispatchQueue.main.async {
-                    completion(.failure(error))
+                    self.errorMessage = error.localizedDescription
                 }
             }
         }
 
-        operation.queryResultBlock = { result in
+        operation.queryResultBlock = { [weak self] result in
             DispatchQueue.main.async {
+                guard let self = self else { return }
+
                 switch result {
                 case .success:
-                    let bids = fetchedRecords.compactMap {
-                        Bid.fromCKRecord($0)
+                    self.wishlistedProperties = fetchedRecords.compactMap {
+                        PropertyListing.fromCKRecord($0)
                     }
-                    completion(.success(bids))
                 case .failure(let error):
-                    completion(.failure(error))
+                    self.errorMessage = error.localizedDescription
                 }
             }
         }
 
         publicDB.add(operation)
     }
-
 }

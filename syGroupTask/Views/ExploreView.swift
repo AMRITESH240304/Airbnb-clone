@@ -59,11 +59,11 @@ struct ExploreView: View {
         }
         .onAppear {
             cloudkitViewModel.fetchAllListings()
+            cloudkitViewModel.fetchUserWishlist()
             print("All properties count: \(cloudkitViewModel.allProperties.count)")
         }
     }
 
-    // MARK: - Real Estate Section (Dynamic)
     var realEstateSection: some View {
         VStack(alignment: .leading, spacing: 24) {
             let categorizedProperties = Dictionary(grouping: cloudkitViewModel.allProperties) { $0.category }
@@ -103,7 +103,6 @@ struct ExploreView: View {
         }
     }
 
-    // MARK: - Other Sections (Keep existing implementation)
     var experiencesSection: some View {
         VStack(alignment: .leading, spacing: 24) {
             Text("Professionals section - Coming soon")
