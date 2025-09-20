@@ -15,6 +15,10 @@ class CloudkitManagerViewModel: ObservableObject {
     @Published var wishlistItems: [Wishlist] = []
     @Published var wishlistedProperties: [PropertyListing] = []
     @Published var hasLoadedWishlist = false
+    
+    // Payment related
+    @Published var userPayments: [Payment] = []
+    @Published var hasLoadedPayments = false
 
     private let container: CKContainer
     private let publicDB: CKDatabase
@@ -29,6 +33,9 @@ class CloudkitManagerViewModel: ObservableObject {
         container = CKContainer.default()
         publicDB = container.publicCloudDatabase
         privateDB = container.privateCloudDatabase
+        
+        // Cache user ID on initialization
+        cacheUserID()
     }
 
     func fetchUserID(completion: @escaping (Result<String, Error>) -> Void) {
@@ -91,7 +98,11 @@ class CloudkitManagerViewModel: ObservableObject {
                     ownerName: "Current User",
                     photoURLs: formData.photoURLs.filter { !$0.isEmpty },
                     bids: [],
-                    highestBid: nil
+                    highestBid: nil,
+                    listingTier: .basic,
+                    isPremium: false,
+                    isFeatured: false,
+                    contactCount: 0
                 )
 
                 let record = propertyListing.toCKRecord()
@@ -136,6 +147,196 @@ class CloudkitManagerViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Payment Methods
+    
+    func processContactOwnerPayment(
+        property: PropertyListing,
+        completion: @escaping (Result<Payment, Error>) -> Void
+    ) {
+        fetchUserID { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let userID):
+                // Check if user has already paid for this property contact
+                if self.userPayments.contains(where: { 
+                    $0.propertyID == property.id && 
+                    $0.payerID == userID && 
+                    $0.paymentType == .propertyContact &&
+                    $0.paymentStatus == .completed 
+                }) {
+                    // User has already paid, allow contact
+                    let error = NSError(
+                        domain: "PaymentManager",
+                        code: 100,
+                        userInfo: [NSLocalizedDescriptionKey: "Already paid for this contact"]
+                    )
+                    completion(.failure(error))
+                    return
+                }
+                
+                let amount = RevenueConfig.contactOwnerFee
+                let platformFeeAmount = amount * (RevenueConfig.platformFeePercentage / 100)
+                let netAmount = amount - platformFeeAmount
+                
+                let payment = Payment(
+                    id: UUID(),
+                    recordID: nil,
+                    propertyID: property.id,
+                    payerID: userID,
+                    payerName: "Current User",
+                    recipientID: property.ownerID,
+                    recipientName: property.ownerName,
+                    amount: amount,
+                    paymentType: .propertyContact,
+                    paymentMethod: .upi,
+                    paymentStatus: .completed,
+                    transactionDate: Date(),
+                    description: "Contact fee for property: \(property.title)",
+                    platformFeePercentage: RevenueConfig.platformFeePercentage,
+                    platformFeeAmount: platformFeeAmount,
+                    netAmount: netAmount
+                )
+                
+                let record = payment.toCKRecord()
+                
+                self.privateDB.save(record) { (savedRecord, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            self.errorMessage = error.localizedDescription
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        guard let savedRecord = savedRecord else {
+                            let error = NSError(
+                                domain: "PaymentManager",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "Failed to save payment record"]
+                            )
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        var savedPayment = payment
+                        savedPayment.recordID = savedRecord.recordID
+                        self.userPayments.append(savedPayment)
+                        
+                        // Update property contact count
+                        self.incrementPropertyContactCount(property: property)
+                        
+                        completion(.success(savedPayment))
+                    }
+                }
+                
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+    
+    func hasUserPaidForContact(property: PropertyListing) -> Bool {
+        // Check local payments cache for immediate UI response
+        return userPayments.contains { payment in
+            payment.propertyID == property.id &&
+            payment.paymentType == .propertyContact &&
+            payment.paymentStatus == .completed
+        }
+    }
+    
+    func canUserContactOwner(property: PropertyListing) -> Bool {
+        // First check if user has paid
+        let hasPaid = hasUserPaidForContact(property: property)
+        
+        // For ownership check, we need to use a stored user ID
+        // You might want to store the current user ID when app starts
+        return hasPaid && !isCurrentUserProperty(property: property)
+    }
+    
+    // Helper function to check if current user owns the property
+    func isCurrentUserProperty(property: PropertyListing) -> Bool {
+        // This should ideally use a cached user ID for immediate response
+        // For now, we'll return false and let the UI handle the async check
+        return false
+    }
+    
+    // Add this function to get user ID synchronously when available
+    private var cachedUserID: String?
+    
+    func cacheUserID() {
+        fetchUserID { [weak self] result in
+            if case .success(let userID) = result {
+                self?.cachedUserID = userID
+            }
+        }
+    }
+    
+    // Updated function that uses cached user ID
+    func isPropertyOwnedByCurrentUser(_ property: PropertyListing) -> Bool {
+        return cachedUserID == property.ownerID
+    }
+
+    func fetchUserPayments(forceRefresh: Bool = false) {
+        if hasLoadedPayments && !forceRefresh && !userPayments.isEmpty {
+            return
+        }
+        
+        fetchUserID { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let userID):
+                let predicate = NSPredicate(format: "payerID == %@", userID)
+                let query = CKQuery(recordType: "Payment", predicate: predicate)
+                query.sortDescriptors = [NSSortDescriptor(key: "transactionDate", ascending: false)]
+                
+                let operation = CKQueryOperation(query: query)
+                operation.resultsLimit = CKQueryOperation.maximumResults
+                
+                var fetchedRecords: [CKRecord] = []
+                
+                operation.recordMatchedBlock = { (_, result) in
+                    switch result {
+                    case .success(let record):
+                        fetchedRecords.append(record)
+                    case .failure(let error):
+                        DispatchQueue.main.async {
+                            self.errorMessage = error.localizedDescription
+                        }
+                    }
+                }
+                
+                operation.queryResultBlock = { [weak self] result in
+                    DispatchQueue.main.async {
+                        guard let self = self else { return }
+                        
+                        switch result {
+                        case .success:
+                            self.userPayments = fetchedRecords.compactMap {
+                                Payment.fromCKRecord($0)
+                            }
+                            self.hasLoadedPayments = true
+                        case .failure(let error):
+                            self.errorMessage = error.localizedDescription
+                        }
+                    }
+                }
+                
+                self.privateDB.add(operation)
+                
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    // MARK: - Existing Methods (unchanged)
+    
     func fetchAllListings(forceRefresh: Bool = false) {
         if hasLoadedAllProperties && !forceRefresh && !allProperties.isEmpty {
             return
@@ -253,7 +454,7 @@ class CloudkitManagerViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Wishlist Methods
+    // MARK: - Wishlist Methods (unchanged)
 
     func addToWishlist(
         property: PropertyListing,
@@ -471,5 +672,28 @@ class CloudkitManagerViewModel: ObservableObject {
         }
 
         publicDB.add(operation)
+    }
+    
+    private func incrementPropertyContactCount(property: PropertyListing) {
+        guard let recordID = property.recordID else { return }
+        
+        publicDB.fetch(withRecordID: recordID) { [weak self] record, error in
+            guard let self = self, let record = record else { return }
+            
+            let currentCount = record["contactCount"] as? Int ?? 0
+            record["contactCount"] = currentCount + 1
+            
+            self.publicDB.save(record) { _, _ in
+                // Update local property as well
+                DispatchQueue.main.async {
+                    if let index = self.allProperties.firstIndex(where: { $0.id == property.id }) {
+                        self.allProperties[index].contactCount += 1
+                    }
+                    if let index = self.userProperties.firstIndex(where: { $0.id == property.id }) {
+                        self.userProperties[index].contactCount += 1
+                    }
+                }
+            }
+        }
     }
 }

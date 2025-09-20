@@ -11,9 +11,17 @@ import MapKit
 struct PropertyDetailView: View {
     let property: PropertyListing
     @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
-    @State private var isWishlisted: Bool = false
-    @State private var region = MKCoordinateRegion()
+    @StateObject private var viewModel: PropertyDetailViewModel
     @Environment(\.dismiss) private var dismiss
+    
+    init(property: PropertyListing) {
+        self.property = property
+        // Don't pass cloudkitViewModel in init - will be set from environment
+        self._viewModel = StateObject(wrappedValue: PropertyDetailViewModel(
+            cardId: UUID(), 
+            property: property
+        ))
+    }
     
     var body: some View {
         VStack {
@@ -30,11 +38,11 @@ struct PropertyDetailView: View {
                 Spacer()
                 
                 Button {
-                    toggleWishlist()
+                    viewModel.toggleWishlist()
                 } label: {
-                    Image(systemName: isWishlisted ? "heart.fill" : "heart")
+                    Image(systemName: viewModel.isWishlisted ? "heart.fill" : "heart")
                         .font(.system(size: 20, weight: .medium))
-                        .foregroundColor(isWishlisted ? .red : Theme.textPrimary)
+                        .foregroundColor(viewModel.isWishlisted ? .red : Theme.textPrimary)
                 }
                 .padding(.trailing)
             }
@@ -42,177 +50,30 @@ struct PropertyDetailView: View {
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    if !property.photoURLs.isEmpty {
-                        TabView {
-                            ForEach(property.photoURLs, id: \.self) { imageURL in
-                                AsyncImage(url: URL(string: imageURL)) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                } placeholder: {
-                                    Rectangle()
-                                        .fill(Color.gray.opacity(0.3))
-                                        .overlay(
-                                            ProgressView()
-                                                .progressViewStyle(CircularProgressViewStyle())
-                                        )
-                                }
-                                .frame(height: 280)
-                                .clipped()
-                            }
-                        }
-                        .frame(height: 280)
-                        .tabViewStyle(PageTabViewStyle())
-                    } else {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(height: 280)
-                            .overlay(
-                                Image(systemName: "house")
-                                    .font(.system(size: 60))
-                                    .foregroundColor(.gray)
-                            )
-                    }
+                    PropertyImageCarousel(photoURLs: property.photoURLs)
                     
                     VStack(alignment: .leading, spacing: 16) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(property.title)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(Theme.textPrimary)
-                            
-                            Text(property.location)
-                                .font(.subheadline)
-                                .foregroundColor(Theme.textSecondary)
-                        }
-                        .padding(.horizontal)
+                        PropertyHeaderSection(property: property)
                         
                         Divider()
                         
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("₹\(Int(property.price))")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(Theme.textPrimary)
-                                
-                                Text(property.listingType.rawValue)
-                                    .font(.subheadline)
-                                    .foregroundColor(Theme.textSecondary)
-                            }
-                            
-                            Spacer()
-                            
-                            VStack(alignment: .trailing, spacing: 4) {
-                                Text(property.status.rawValue)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(getStatusColor(property.status))
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(getStatusColor(property.status).opacity(0.1))
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                                
-                                Text("Category: \(property.category)")
-                                    .font(.caption)
-                                    .foregroundColor(Theme.textSecondary)
-                            }
-                        }
-                        .padding(.horizontal)
+                        PropertyPriceSection(property: property, viewModel: viewModel)
                         
                         Divider()
                         
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Property Details")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundColor(Theme.textPrimary)
-                            
-                            VStack(spacing: 8) {
-                                DetailRow(title: "Listing Date", value: formatDate(property.listingDate))
-                                DetailRow(title: "Expires On", value: formatDate(property.expirationDate))
-                                DetailRow(title: "Duration", value: "\(property.listingDuration) days")
-                                
-                                if let highestBid = property.highestBid {
-                                    DetailRow(title: "Highest Bid", value: "₹\(Int(highestBid))")
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
+                        PropertyDetailsSection(property: property, viewModel: viewModel)
                         
                         Divider()
                         
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Description")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundColor(Theme.textPrimary)
-                            
-                            Text(property.description)
-                                .font(.body)
-                                .foregroundColor(Theme.textSecondary)
-                                .lineSpacing(4)
-                        }
-                        .padding(.horizontal)
+                        PropertyDescriptionSection(property: property)
                         
                         Divider()
                         
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Location")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundColor(Theme.textPrimary)
-                                .padding(.horizontal)
-                            
-                            Map(coordinateRegion: $region, annotationItems: [MapAnnotation(coordinate: region.center)]) { annotation in
-                                MapPin(coordinate: annotation.coordinate, tint: .red)
-                            }
-                            .frame(height: 200)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .padding(.horizontal)
-                            .onAppear {
-                                setupMapRegion()
-                            }
-                            
-                            Text(property.location)
-                                .font(.subheadline)
-                                .foregroundColor(Theme.textSecondary)
-                                .padding(.horizontal)
-                        }
+                        PropertyLocationSection(property: property, region: $viewModel.region)
                         
                         Divider()
                         
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Listed by")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundColor(Theme.textPrimary)
-                            
-                            HStack {
-                                Circle()
-                                    .fill(Theme.primaryColor.opacity(0.2))
-                                    .frame(width: 50, height: 50)
-                                    .overlay(
-                                        Text(String(property.ownerName.prefix(1)).uppercased())
-                                            .font(.title3)
-                                            .fontWeight(.bold)
-                                            .foregroundColor(Theme.primaryColor)
-                                    )
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(property.ownerName)
-                                        .font(.headline)
-                                        .foregroundColor(Theme.textPrimary)
-                                    
-                                    Text("Property Owner")
-                                        .font(.subheadline)
-                                        .foregroundColor(Theme.textSecondary)
-                                }
-                                
-                                Spacer()
-                            }
-                        }
-                        .padding(.horizontal)
+                        PropertyOwnerSection(property: property)
                         
                         Spacer()
                             .frame(height: 100)
@@ -221,128 +82,291 @@ struct PropertyDetailView: View {
                 .padding(.vertical, 8)
             }
             
-            VStack {
-                Divider()
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("₹\(Int(property.price))")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(Theme.textPrimary)
-                        
-                        Text(property.listingType.rawValue)
-                            .font(.caption)
-                            .foregroundColor(Theme.textSecondary)
-                    }
-                    
-                    Spacer()
-                    
-                    if property.status == .active {
-                        Button(action: {
-                            print("Contact owner for property: \(property.title)")
-                        }) {
-                            Text("Contact Owner")
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 24)
-                                .padding(.vertical, 12)
-                                .background(Theme.primaryColor)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                    } else {
-                        Text("Not Available")
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 12)
-                            .background(Color.gray)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 10)
-                .background(Theme.background)
-                .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
-            }
+            PropertyBottomActionBar(property: property, viewModel: viewModel)
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
         .onAppear {
-            updateWishlistStatus()
+            // Set the cloudkit instance in viewModel from environment
+            viewModel.setCloudkitViewModel(cloudkitViewModel)
+            viewModel.updateWishlistStatus()
         }
         .onChange(of: cloudkitViewModel.wishlistItems) { _ in
-            updateWishlistStatus()
+            viewModel.updateWishlistStatus()
+        }
+        .alert(viewModel.paymentSuccess ? "Payment Successful!" : "Payment Info", isPresented: $viewModel.showingPaymentAlert) {
+            Button("OK") { }
+        } message: {
+            Text(viewModel.paymentMessage)
         }
     }
+}
+
+struct PropertyImageCarousel: View {
+    let photoURLs: [String]
     
-    private func updateWishlistStatus() {
-        isWishlisted = cloudkitViewModel.isPropertyInWishlist(property)
-    }
-    
-    private func toggleWishlist() {
-        if isWishlisted {
-            cloudkitViewModel.removeFromWishlist(property: property) { result in
-                switch result {
-                case .success:
-                    print("Removed from wishlist")
-                case .failure(let error):
-                    print("Failed to remove from wishlist: \(error)")
+    var body: some View {
+        if !photoURLs.isEmpty {
+            TabView {
+                ForEach(photoURLs, id: \.self) { imageURL in
+                    AsyncImage(url: URL(string: imageURL)) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    } placeholder: {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .overlay(
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle())
+                            )
+                    }
+                    .frame(height: 280)
+                    .clipped()
                 }
             }
+            .frame(height: 280)
+            .tabViewStyle(PageTabViewStyle())
         } else {
-            cloudkitViewModel.addToWishlist(property: property) { result in
-                switch result {
-                case .success:
-                    print("Added to wishlist")
-                case .failure(let error):
-                    print("Failed to add to wishlist: \(error)")
+            Rectangle()
+                .fill(Color.gray.opacity(0.3))
+                .frame(height: 280)
+                .overlay(
+                    Image(systemName: "house")
+                        .font(.system(size: 60))
+                        .foregroundColor(.gray)
+                )
+        }
+    }
+}
+
+struct PropertyHeaderSection: View {
+    let property: PropertyListing
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(property.title)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(Theme.textPrimary)
+            
+            Text(property.location)
+                .font(.subheadline)
+                .foregroundColor(Theme.textSecondary)
+        }
+        .padding(.horizontal)
+    }
+}
+
+struct PropertyPriceSection: View {
+    let property: PropertyListing
+    let viewModel: PropertyDetailViewModel
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("₹\(Int(property.price))")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(Theme.textPrimary)
+                
+                Text(property.listingType.rawValue)
+                    .font(.subheadline)
+                    .foregroundColor(Theme.textSecondary)
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(property.status.rawValue)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(viewModel.getStatusColor(property.status))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(viewModel.getStatusColor(property.status).opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                
+                Text("Category: \(property.category)")
+                    .font(.caption)
+                    .foregroundColor(Theme.textSecondary)
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+struct PropertyDetailsSection: View {
+    let property: PropertyListing
+    let viewModel: PropertyDetailViewModel
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Property Details")
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(Theme.textPrimary)
+            
+            VStack(spacing: 8) {
+                DetailRow(title: "Listing Date", value: viewModel.formatDate(property.listingDate))
+                DetailRow(title: "Expires On", value: viewModel.formatDate(property.expirationDate))
+                DetailRow(title: "Duration", value: "\(property.listingDuration) days")
+                
+                if let highestBid = property.highestBid {
+                    DetailRow(title: "Highest Bid", value: "₹\(Int(highestBid))")
                 }
             }
         }
+        .padding(.horizontal)
     }
+}
+
+struct PropertyDescriptionSection: View {
+    let property: PropertyListing
     
-    private func getStatusColor(_ status: ListingStatus) -> Color {
-        switch status {
-        case .active:
-            return .green
-        case .pending:
-            return .orange
-        case .sold:
-            return .red
-        case .expired:
-            return .gray
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Description")
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(Theme.textPrimary)
+            
+            Text(property.description)
+                .font(.body)
+                .foregroundColor(Theme.textSecondary)
+                .lineSpacing(4)
+        }
+        .padding(.horizontal)
+    }
+}
+
+struct PropertyLocationSection: View {
+    let property: PropertyListing
+    @Binding var region: MKCoordinateRegion
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Location")
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(Theme.textPrimary)
+                .padding(.horizontal)
+            
+            Map(coordinateRegion: $region, annotationItems: [MapAnnotation(coordinate: region.center)]) { annotation in
+                MapPin(coordinate: annotation.coordinate, tint: .red)
+            }
+            .frame(height: 200)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal)
+            
+            Text(property.location)
+                .font(.subheadline)
+                .foregroundColor(Theme.textSecondary)
+                .padding(.horizontal)
         }
     }
+}
+
+struct PropertyOwnerSection: View {
+    let property: PropertyListing
     
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
-    }
-    
-    private func setupMapRegion() {
-        let defaultCoordinate = CLLocationCoordinate2D(latitude: 28.6139, longitude: 77.2090)
-        
-        region = MKCoordinateRegion(
-            center: defaultCoordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        )
-        
-        geocodeLocation(property.location)
-    }
-    
-    private func geocodeLocation(_ locationString: String) {
-        let geocoder = CLGeocoder()
-        geocoder.geocodeAddressString(locationString) { placemarks, error in
-            if let placemark = placemarks?.first,
-               let location = placemark.location {
-                DispatchQueue.main.async {
-                    region = MKCoordinateRegion(
-                        center: location.coordinate,
-                        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Listed by")
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(Theme.textPrimary)
+            
+            HStack {
+                Circle()
+                    .fill(Theme.primaryColor.opacity(0.2))
+                    .frame(width: 50, height: 50)
+                    .overlay(
+                        Text(String(property.ownerName.prefix(1)).uppercased())
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(Theme.primaryColor)
                     )
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(property.ownerName)
+                        .font(.headline)
+                        .foregroundColor(Theme.textPrimary)
+                    
+                    Text("Property Owner")
+                        .font(.subheadline)
+                        .foregroundColor(Theme.textSecondary)
+                }
+                
+                Spacer()
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+struct PropertyBottomActionBar: View {
+    let property: PropertyListing
+    let viewModel: PropertyDetailViewModel
+    
+    var body: some View {
+        VStack {
+            Divider()
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("₹\(Int(property.price))")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(Theme.textPrimary)
+                    
+                    Text(property.listingType.rawValue)
+                        .font(.caption)
+                        .foregroundColor(Theme.textSecondary)
+                }
+                
+                Spacer()
+                
+                if property.status == .active {
+                    Button(action: {
+                        viewModel.handleButtonAction()
+                    }) {
+                        HStack {
+                            if viewModel.isProcessingPayment {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .scaleEffect(0.8)
+                            }
+                            
+                            HStack(spacing: 8) {
+                                if viewModel.hasUserPaidForContact() {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.white)
+                                }
+                                Text(viewModel.getButtonText())
+                            }
+                        }
+                        .fontWeight(.bold)
+                        .foregroundColor(viewModel.getButtonTextColor())
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(viewModel.getButtonColor())
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .disabled(viewModel.isButtonDisabled())
+                } else {
+                    Text("Not Available")
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color.gray)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
+            .padding(.horizontal)
+            .padding(.vertical, 10)
+            .background(Theme.background)
+            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
         }
     }
 }
@@ -371,29 +395,3 @@ struct MapAnnotation: Identifiable {
     let id = UUID()
     let coordinate: CLLocationCoordinate2D
 }
-
-#Preview {
-    NavigationView {
-        PropertyDetailView(property: PropertyListing(
-            id: UUID(),
-            recordID: nil,
-            title: "Beautiful Modern Apartment",
-            category: "Apartment",
-            location: "Mumbai, Maharashtra",
-            description: "A stunning modern apartment with all amenities and great city views.",
-            listingType: .forRent,
-            price: 50000,
-            listingDuration: 30,
-            listingDate: Date(),
-            expirationDate: Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date(),
-            status: .active,
-            ownerID: "owner123",
-            ownerName: "John Doe",
-            photoURLs: [],
-            bids: [],
-            highestBid: nil
-        ))
-        .environmentObject(CloudkitManagerViewModel())
-    }
-}
-

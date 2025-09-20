@@ -10,6 +10,7 @@ import SwiftUI
 struct CategorySectionView: View {
     let categoryName: String
     let properties: [PropertyListing]
+    @EnvironmentObject var viewModel: CloudkitManagerViewModel
     
     var body: some View {
         VStack(alignment: .leading) {

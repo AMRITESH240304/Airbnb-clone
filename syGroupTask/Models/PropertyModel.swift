@@ -33,6 +33,11 @@ struct PropertyListing: Identifiable {
     var bids: [Bid]?
     var highestBid: Double?
     
+    var listingTier: ListingTier
+    var isPremium: Bool
+    var isFeatured: Bool
+    var contactCount: Int
+    
     func toCKRecord() -> CKRecord {
         let record: CKRecord
         
@@ -56,11 +61,14 @@ struct PropertyListing: Identifiable {
         record["ownerID"] = ownerID
         record["ownerName"] = ownerName
         record["photoURLs"] = photoURLs
+        record["listingTier"] = listingTier.rawValue
+        record["isPremium"] = isPremium
+        record["isFeatured"] = isFeatured
+        record["contactCount"] = contactCount
         
         if let highestBid = highestBid {
             record["highestBid"] = highestBid
         }
-        
         
         return record
     }
@@ -89,6 +97,11 @@ struct PropertyListing: Identifiable {
         }
         
         let highestBid = record["highestBid"] as? Double
+        let listingTierRaw = record["listingTier"] as? String ?? "basic"
+        let listingTier = ListingTier(rawValue: listingTierRaw) ?? .basic
+        let isPremium = record["isPremium"] as? Bool ?? false
+        let isFeatured = record["isFeatured"] as? Bool ?? false
+        let contactCount = record["contactCount"] as? Int ?? 0
         
         return PropertyListing(
             id: id,
@@ -107,7 +120,11 @@ struct PropertyListing: Identifiable {
             ownerName: ownerName,
             photoURLs: photoURLs,
             bids: [],
-            highestBid: highestBid
+            highestBid: highestBid,
+            listingTier: listingTier,
+            isPremium: isPremium,
+            isFeatured: isFeatured,
+            contactCount: contactCount
         )
     }
 }
@@ -126,6 +143,40 @@ enum ListingStatus: String, CaseIterable, Identifiable {
     case expired = "Expired"
     
     var id: String { self.rawValue }
+}
+
+enum ListingTier: String, CaseIterable, Identifiable {
+    case basic = "Basic"
+    case premium = "Premium"
+    case featured = "Featured"
+    
+    var id: String { self.rawValue }
+    
+    var displayName: String {
+        return self.rawValue
+    }
+    
+    var price: Double {
+        switch self {
+        case .basic:
+            return 0.0
+        case .premium:
+            return RevenueConfig.premiumListingFee
+        case .featured:
+            return RevenueConfig.featuredListingFee
+        }
+    }
+    
+    var benefits: [String] {
+        switch self {
+        case .basic:
+            return ["Standard listing", "Basic visibility"]
+        case .premium:
+            return ["Higher visibility", "Premium badge", "Priority in search"]
+        case .featured:
+            return ["Maximum visibility", "Featured badge", "Top of search results", "Social media promotion"]
+        }
+    }
 }
 
 struct Bid: Identifiable {

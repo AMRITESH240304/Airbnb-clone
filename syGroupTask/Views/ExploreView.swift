@@ -123,6 +123,7 @@ struct ExploreView: View {
 struct CategoryDetailView: View {
     let categoryName: String
     let properties: [PropertyListing]
+    @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
     
     var body: some View {
         ScrollView {
