@@ -19,6 +19,8 @@ class CloudkitManagerViewModel: ObservableObject {
     // Payment related
     @Published var userPayments: [Payment] = []
     @Published var hasLoadedPayments = false
+    @Published var allPayments: [Payment] = []
+    @Published var revenueData: RevenueData = RevenueData()
 
     private let container: CKContainer
     private let publicDB: CKDatabase
@@ -28,6 +30,12 @@ class CloudkitManagerViewModel: ObservableObject {
     @Published var allProperties: [PropertyListing] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+
+    // Make cachedUserID accessible
+    var cachedUserID: String? {
+        return _cachedUserID
+    }
+    private var _cachedUserID: String?
 
     init() {
         container = CKContainer.default()
@@ -265,13 +273,11 @@ class CloudkitManagerViewModel: ObservableObject {
             }
         }
     }
-
-    private var cachedUserID: String?
     
     func cacheUserID() {
         fetchUserID { [weak self] result in
             if case .success(let userID) = result {
-                self?.cachedUserID = userID
+                self?._cachedUserID = userID
             }
         }
     }
@@ -701,5 +707,213 @@ class CloudkitManagerViewModel: ObservableObject {
                 }
             }
         }
+    }
+    
+    // MARK: - Revenue Analytics Methods
+    
+    func fetchUserRevenue() {
+        fetchAllPayments { [weak self] in
+            self?.calculateRevenueData()
+        }
+    }
+    
+    func fetchAllPayments(completion: (() -> Void)? = nil) {
+        let predicate = NSPredicate(value: true)
+        let query = CKQuery(recordType: "Payment", predicate: predicate)
+        query.sortDescriptors = [NSSortDescriptor(key: "transactionDate", ascending: false)]
+        
+        let operation = CKQueryOperation(query: query)
+        operation.resultsLimit = CKQueryOperation.maximumResults
+        
+        var fetchedRecords: [CKRecord] = []
+        
+        operation.recordMatchedBlock = { (_, result) in
+            switch result {
+            case .success(let record):
+                fetchedRecords.append(record)
+            case .failure(let error):
+                print("Error fetching payment record: \(error)")
+            }
+        }
+        
+        operation.queryResultBlock = { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                
+                switch result {
+                case .success:
+                    let payments = fetchedRecords.compactMap { Payment.fromCKRecord($0) }
+                    self.allPayments = payments
+                    completion?()
+                    
+                case .failure(let error):
+                    self.errorMessage = error.localizedDescription
+                    print("Failed to fetch all payments: \(error)")
+                }
+            }
+        }
+        
+        publicDB.add(operation)
+    }
+    
+    func getAllPayments() -> [Payment] {
+        return allPayments
+    }
+    
+    func getUserReceivedPayments() -> [Payment] {
+        guard let userID = _cachedUserID else { return [] }
+        return allPayments.filter { $0.recipientID == userID }
+    }
+    
+    func getUserSentPayments() -> [Payment] {
+        guard let userID = _cachedUserID else { return [] }
+        return allPayments.filter { $0.payerID == userID }
+    }
+    
+    private func calculateRevenueData() {
+        guard let userID = _cachedUserID else { return }
+        
+        let receivedPayments = allPayments.filter { $0.recipientID == userID && $0.paymentStatus == .completed }
+        
+        // Calculate total amounts
+        let totalAmount = receivedPayments.reduce(0) { $0 + $1.netAmount }
+        let totalPlatformFee = receivedPayments.reduce(0) { $0 + $1.platformFeeAmount }
+        let paymentCount = receivedPayments.count
+        
+        // Group by property
+        let propertyGroups = Dictionary(grouping: receivedPayments) { $0.propertyID }
+        let propertyRevenue = propertyGroups.map { (propertyID, payments) in
+            let revenue = payments.reduce(0) { $0 + $1.netAmount }
+            let contactCount = payments.count
+            let firstPayment = payments.first!
+            
+            return PropertyRevenueData(
+                propertyID: propertyID,
+                propertyTitle: firstPayment.propertyTitle,
+                propertyLocation: firstPayment.propertyLocation,
+                revenue: revenue,
+                contactCount: contactCount
+            )
+        }.sorted { $0.revenue > $1.revenue }
+        
+        // Group by payment type
+        let typeGroups = Dictionary(grouping: receivedPayments) { $0.paymentType }
+        let typeRevenue = typeGroups.map { (type, payments) in
+            let revenue = payments.reduce(0) { $0 + $1.netAmount }
+            return TypeRevenueData(type: type.rawValue, revenue: revenue)
+        }
+        
+        // Monthly data
+        let calendar = Calendar.current
+        let monthlyGroups = Dictionary(grouping: receivedPayments) { payment in
+            calendar.dateInterval(of: .month, for: payment.transactionDate)?.start ?? payment.transactionDate
+        }
+        
+        let monthlyData = monthlyGroups.map { (month, payments) in
+            let revenue = payments.reduce(0) { $0 + $1.netAmount }
+            return MonthlyRevenueData(month: month, revenue: revenue)
+        }.sorted { $0.month < $1.month }
+        
+        DispatchQueue.main.async {
+            self.revenueData = RevenueData(
+                totalAmount: totalAmount,
+                totalPlatformFee: totalPlatformFee,
+                paymentCount: paymentCount,
+                propertyCount: propertyGroups.count,
+                propertyRevenue: propertyRevenue,
+                typeRevenue: typeRevenue,
+                monthlyData: monthlyData
+            )
+        }
+    }
+    
+    func getFilteredRevenue(for timeFrame: TimeFrame) -> RevenueData {
+        guard let userID = _cachedUserID else { return RevenueData() }
+        
+        let calendar = Calendar.current
+        let now = Date()
+        
+        let filteredPayments: [Payment]
+        
+        switch timeFrame {
+        case .thisWeek:
+            let weekStart = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? now
+            filteredPayments = allPayments.filter { 
+                $0.recipientID == userID && 
+                $0.paymentStatus == .completed && 
+                $0.transactionDate >= weekStart 
+            }
+        case .thisMonth:
+            let monthStart = calendar.dateInterval(of: .month, for: now)?.start ?? now
+            filteredPayments = allPayments.filter { 
+                $0.recipientID == userID && 
+                $0.paymentStatus == .completed && 
+                $0.transactionDate >= monthStart 
+            }
+        case .last3Months:
+            let threeMonthsAgo = calendar.date(byAdding: .month, value: -3, to: now) ?? now
+            filteredPayments = allPayments.filter { 
+                $0.recipientID == userID && 
+                $0.paymentStatus == .completed && 
+                $0.transactionDate >= threeMonthsAgo 
+            }
+        case .thisYear:
+            let yearStart = calendar.dateInterval(of: .year, for: now)?.start ?? now
+            filteredPayments = allPayments.filter { 
+                $0.recipientID == userID && 
+                $0.paymentStatus == .completed && 
+                $0.transactionDate >= yearStart 
+            }
+        case .allTime:
+            filteredPayments = allPayments.filter { 
+                $0.recipientID == userID && 
+                $0.paymentStatus == .completed 
+            }
+        }
+        
+        // Calculate filtered revenue data similar to calculateRevenueData()
+        let totalAmount = filteredPayments.reduce(0) { $0 + $1.netAmount }
+        let totalPlatformFee = filteredPayments.reduce(0) { $0 + $1.platformFeeAmount }
+        let paymentCount = filteredPayments.count
+        
+        let propertyGroups = Dictionary(grouping: filteredPayments) { $0.propertyID }
+        let propertyRevenue = propertyGroups.map { (propertyID, payments) in
+            let revenue = payments.reduce(0) { $0 + $1.netAmount }
+            let contactCount = payments.count
+            let firstPayment = payments.first!
+            
+            return PropertyRevenueData(
+                propertyID: propertyID,
+                propertyTitle: firstPayment.propertyTitle,
+                propertyLocation: firstPayment.propertyLocation,
+                revenue: revenue,
+                contactCount: contactCount
+            )
+        }.sorted { $0.revenue > $1.revenue }
+        
+        let typeGroups = Dictionary(grouping: filteredPayments) { $0.paymentType }
+        let typeRevenue = typeGroups.map { (type, payments) in
+            let revenue = payments.reduce(0) { $0 + $1.netAmount }
+            return TypeRevenueData(type: type.rawValue, revenue: revenue)
+        }
+        
+        let monthlyGroups = Dictionary(grouping: filteredPayments) { payment in
+            calendar.dateInterval(of: .month, for: payment.transactionDate)?.start ?? payment.transactionDate
+        }
+        
+        let monthlyData = monthlyGroups.map { (month, payments) in
+            let revenue = payments.reduce(0) { $0 + $1.netAmount }
+            return MonthlyRevenueData(month: month, revenue: revenue)
+        }.sorted { $0.month < $1.month }
+        
+        return RevenueData(
+            totalAmount: totalAmount,
+            totalPlatformFee: totalPlatformFee,
+            paymentCount: paymentCount,
+            propertyCount: propertyGroups.count,
+            propertyRevenue: propertyRevenue,
+            typeRevenue: typeRevenue,
+            monthlyData: monthlyData
+        )
     }
 }

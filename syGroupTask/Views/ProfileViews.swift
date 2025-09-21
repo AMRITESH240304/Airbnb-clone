@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import Charts
 
 struct ProfileViews: View {
     @EnvironmentObject var authViewModel: AuthManagerViewModel
+    @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
     @State private var showLoginView = false
+    @State private var showIncomeSheet = false
+    @State private var showTransactionSheet = false
     
     var body: some View {
         NavigationStack {
@@ -21,6 +25,14 @@ struct ProfileViews: View {
         }
         .fullScreenCover(isPresented: $showLoginView) {
             LoginSignUpView()
+        }
+        .sheet(isPresented: $showIncomeSheet) {
+            IncomeAnalyticsView()
+                .environmentObject(cloudkitViewModel)
+        }
+        .sheet(isPresented: $showTransactionSheet) {
+            TransactionHistoryView()
+                .environmentObject(cloudkitViewModel)
         }
     }
     
@@ -150,7 +162,7 @@ struct ProfileViews: View {
                         .font(.title2)
                         .fontWeight(.semibold)
                     
-                    Text("Guest")
+                    Text("Property Owner")
                         .foregroundColor(Theme.textSecondary)
                         .font(.subheadline)
                 }
@@ -177,6 +189,18 @@ struct ProfileViews: View {
                     Divider().padding(.top, 10)
                     
                     Section {
+                        Button(action: {
+                            showIncomeSheet = true
+                        }) {
+                            ProfileListItem(icon: "chart.bar.fill", title: "Income Analytics", showBadge: false)
+                        }
+                        
+                        Button(action: {
+                            showTransactionSheet = true
+                        }) {
+                            ProfileListItem(icon: "list.bullet.rectangle", title: "Transaction History", showBadge: false)
+                        }
+                        
                         ProfileListItem(icon: "gearshape.fill", title: "Account settings", showBadge: true)
                         ProfileListItem(icon: "questionmark.circle", title: "Get help")
                         ProfileListItem(icon: "person", title: "View profile")
@@ -200,6 +224,10 @@ struct ProfileViews: View {
         }
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.large)
+        .onAppear {
+            cloudkitViewModel.fetchUserPayments(forceRefresh: true)
+            cloudkitViewModel.fetchUserRevenue()
+        }
     }
 }
 
