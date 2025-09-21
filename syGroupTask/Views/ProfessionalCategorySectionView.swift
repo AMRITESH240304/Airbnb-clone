@@ -233,8 +233,8 @@ struct ProfessionalDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Header
-                VStack(alignment: .leading, spacing: 16) {
+                // Profile Header
+                VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         AsyncImage(url: URL(string: professional.profileImageURL ?? "")) { image in
                             image
@@ -295,19 +295,6 @@ struct ProfessionalDetailView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(16)
                 
-                // Description
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("About")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                    
-                    Text(professional.description)
-                        .foregroundColor(Theme.textSecondary)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(16)
-                
                 // Services
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Services")
@@ -326,14 +313,31 @@ struct ProfessionalDetailView: View {
                 Button(action: {
                     showingContactSheet = true
                 }) {
-                    Text("Contact Professional")
-                        .font(.headline)
-                        .fontWeight(.medium)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Theme.primaryColor)
-                        .cornerRadius(12)
+                    HStack {
+                        if isOwnProfessionalProfile() {
+                            Image(systemName: "eye.fill")
+                                .foregroundColor(.white)
+                            Text("View My Profile")
+                        } else if cloudkitViewModel.hasUserPaidForProfessionalContact(professional: professional) {
+                            Image(systemName: "phone.fill")
+                                .foregroundColor(.white)
+                            Text("Contact Professional")
+                        } else {
+                            Image(systemName: "indianrupeesign.circle")
+                                .foregroundColor(.white)
+                            Text("Pay to Contact")
+                        }
+                    }
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        isOwnProfessionalProfile() ? Color.blue :
+                        cloudkitViewModel.hasUserPaidForProfessionalContact(professional: professional) ? Color.green : 
+                        Theme.primaryColor
+                    )
+                    .cornerRadius(12)
                 }
                 .padding(.horizontal)
             }
@@ -344,6 +348,10 @@ struct ProfessionalDetailView: View {
         .sheet(isPresented: $showingContactSheet) {
             ProfessionalContactSheet(professional: professional)
         }
+    }
+    
+    private func isOwnProfessionalProfile() -> Bool {
+        return cloudkitViewModel.cachedUserID == professional.userID
     }
 }
 
@@ -382,6 +390,11 @@ struct ServiceRow: View {
 struct ProfessionalContactSheet: View {
     let professional: Professional
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
+    @State private var isProcessingPayment = false
+    @State private var showingPaymentAlert = false
+    @State private var paymentMessage = ""
+    @State private var paymentSuccess = false
     
     var body: some View {
         NavigationView {
@@ -391,17 +404,96 @@ struct ProfessionalContactSheet: View {
                     .fontWeight(.bold)
                     .padding(.top)
                 
-                VStack(alignment: .leading, spacing: 16) {
-                    ContactInfoRow(icon: "phone.fill", title: "Phone", value: professional.phoneNumber)
-                    ContactInfoRow(icon: "envelope.fill", title: "Email", value: professional.email)
-                    
-                    if let website = professional.website {
-                        ContactInfoRow(icon: "globe", title: "Website", value: website)
+                // Check if this is user's own professional profile
+                if isOwnProfessionalProfile() {
+                    VStack(spacing: 16) {
+                        Image(systemName: "person.circle.fill")
+                            .font(.system(size: 50))
+                            .foregroundColor(Theme.primaryColor)
+                        
+                        Text("This is Your Profile")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(Theme.textPrimary)
+                        
+                        Text("You cannot view contact details for your own professional profile")
+                            .font(.subheadline)
+                            .foregroundColor(Theme.textSecondary)
+                            .multilineTextAlignment(.center)
+                        
+                        // Show contact information directly since it's their own profile
+                        VStack(alignment: .leading, spacing: 16) {
+                            ContactInfoRow(icon: "phone.fill", title: "Phone", value: professional.phoneNumber)
+                            ContactInfoRow(icon: "envelope.fill", title: "Email", value: professional.email)
+                            
+                            if let website = professional.website {
+                                ContactInfoRow(icon: "globe", title: "Website", value: website)
+                            }
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(16)
+                    }
+                } else if cloudkitViewModel.hasUserPaidForProfessionalContact(professional: professional) {
+                    // Show contact information for paid users
+                    VStack(alignment: .leading, spacing: 16) {
+                        ContactInfoRow(icon: "phone.fill", title: "Phone", value: professional.phoneNumber)
+                        ContactInfoRow(icon: "envelope.fill", title: "Email", value: professional.email)
+                        
+                        if let website = professional.website {
+                            ContactInfoRow(icon: "globe", title: "Website", value: website)
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(16)
+                } else {
+                    // Show payment required section for other users
+                    VStack(spacing: 16) {
+                        VStack(spacing: 12) {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(.orange)
+                            
+                            Text("Contact Information Locked")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundColor(Theme.textPrimary)
+                            
+                            Text("Pay ₹\(Int(RevenueConfig.contactOwnerFee)) to unlock contact details for this professional")
+                                .font(.subheadline)
+                                .foregroundColor(Theme.textSecondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding()
+                        .background(Color(.systemGray6))
+                        .cornerRadius(16)
+                        
+                        Button(action: {
+                            processProfessionalContactPayment()
+                        }) {
+                            HStack {
+                                if isProcessingPayment {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Image(systemName: "indianrupeesign.circle")
+                                        .foregroundColor(.white)
+                                }
+                                
+                                Text(isProcessingPayment ? "Processing..." : "Pay ₹\(Int(RevenueConfig.contactOwnerFee)) to Contact")
+                            }
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(isProcessingPayment ? Color.gray : Theme.primaryColor)
+                            .cornerRadius(12)
+                        }
+                        .disabled(isProcessingPayment)
                     }
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(16)
                 
                 Spacer()
             }
@@ -413,6 +505,44 @@ struct ProfessionalContactSheet: View {
                     Button("Done") {
                         dismiss()
                     }
+                }
+            }
+        }
+        .alert(paymentSuccess ? "Payment Successful!" : "Payment Info", isPresented: $showingPaymentAlert) {
+            Button("OK") {
+                if paymentSuccess {
+                    cloudkitViewModel.fetchUserPayments(forceRefresh: true)
+                }
+            }
+        } message: {
+            Text(paymentMessage)
+        }
+        .onAppear {
+            cloudkitViewModel.fetchUserPayments(forceRefresh: true)
+        }
+    }
+    
+    private func isOwnProfessionalProfile() -> Bool {
+        return cloudkitViewModel.cachedUserID == professional.userID
+    }
+    
+    private func processProfessionalContactPayment() {
+        isProcessingPayment = true
+        
+        cloudkitViewModel.processProfessionalContactPayment(professional: professional) { [self] result in
+            DispatchQueue.main.async {
+                self.isProcessingPayment = false
+                
+                switch result {
+                case .success(_):
+                    self.paymentMessage = "Payment successful! You can now view contact details."
+                    self.paymentSuccess = true
+                    self.showingPaymentAlert = true
+                    
+                case .failure(let error):
+                    self.paymentMessage = "Payment failed: \(error.localizedDescription)"
+                    self.paymentSuccess = false
+                    self.showingPaymentAlert = true
                 }
             }
         }

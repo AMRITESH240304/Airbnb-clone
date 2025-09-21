@@ -1108,4 +1108,115 @@ class CloudkitManagerViewModel: ObservableObject {
         guard let userID = cachedUserID else { return nil }
         return professionals.first { $0.userID == userID }
     }
+    
+    func hasUserPaidForProfessionalContact(professional: Professional) -> Bool {
+        guard let cachedUserID = cachedUserID else { return false }
+        
+        return userPayments.contains { payment in
+            payment.propertyID == professional.id &&
+            payment.payerID == cachedUserID &&
+            payment.paymentType == .professionalService &&
+            payment.paymentStatus == .completed
+        }
+    }
+    
+    func processProfessionalContactPayment(
+        professional: Professional,
+        completion: @escaping (Result<Payment, Error>) -> Void
+    ) {
+        fetchUserID { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let userID):
+                // Check if user has already paid for this professional contact
+                let hasAlreadyPaid = self.userPayments.contains { payment in
+                    payment.propertyID == professional.id &&
+                    payment.payerID == userID &&
+                    payment.paymentType == .professionalService &&
+                    payment.paymentStatus == .completed
+                }
+                
+                if hasAlreadyPaid {
+                    let error = NSError(
+                        domain: "PaymentManager",
+                        code: 100,
+                        userInfo: [NSLocalizedDescriptionKey: "Already paid for this professional contact"]
+                    )
+                    completion(.failure(error))
+                    return
+                }
+                
+                // Check if user is trying to pay for their own professional profile
+                if professional.userID == userID {
+                    let error = NSError(
+                        domain: "PaymentManager",
+                        code: 101,
+                        userInfo: [NSLocalizedDescriptionKey: "Cannot pay to contact your own professional profile"]
+                    )
+                    completion(.failure(error))
+                    return
+                }
+                
+                let amount = RevenueConfig.contactOwnerFee
+                let platformFeeAmount = amount * (RevenueConfig.platformFeePercentage / 100)
+                let netAmount = amount - platformFeeAmount
+                
+                let payment = Payment(
+                    id: UUID(),
+                    recordID: nil,
+                    propertyID: professional.id,
+                    propertyTitle: professional.businessName,
+                    propertyLocation: professional.location,
+                    payerID: userID,
+                    payerName: "Current User",
+                    recipientID: professional.userID,
+                    recipientName: professional.userName,
+                    amount: amount,
+                    paymentType: .professionalService,
+                    paymentMethod: .upi,
+                    paymentStatus: .completed,
+                    transactionDate: Date(),
+                    description: "Contact fee for professional: \(professional.businessName)",
+                    platformFeePercentage: RevenueConfig.platformFeePercentage,
+                    platformFeeAmount: platformFeeAmount,
+                    netAmount: netAmount
+                )
+                
+                let record = payment.toCKRecord()
+                
+                self.publicDB.save(record) { (savedRecord, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            self.errorMessage = error.localizedDescription
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        guard let savedRecord = savedRecord else {
+                            let error = NSError(
+                                domain: "PaymentManager",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "Failed to save payment record"]
+                            )
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        var savedPayment = payment
+                        savedPayment.recordID = savedRecord.recordID
+                        self.userPayments.append(savedPayment)
+                        
+                        completion(.success(savedPayment))
+                    }
+                }
+                
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
 }
