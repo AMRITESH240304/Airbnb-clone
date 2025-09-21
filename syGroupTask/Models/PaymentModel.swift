@@ -120,6 +120,9 @@ enum PaymentType: String, CaseIterable, Identifiable {
     case featuredListing = "Featured Listing"
     case subscription = "Subscription"
     case commission = "Commission"
+    case professionalRegistration = "Professional Registration"
+    case professionalService = "Professional Service"
+    case professionalSubscription = "Professional Subscription"
     
     var id: String { self.rawValue }
 }
@@ -153,4 +156,10 @@ struct RevenueConfig {
     static let platformFeePercentage: Double = 5.0
     static let subscriptionMonthlyFee: Double = 299.0
     static let subscriptionYearlyFee: Double = 2999.0
+    
+    // Professional fees
+    static let professionalRegistrationFee: Double = 1500.0
+    static let professionalMonthlySubscription: Double = 499.0
+    static let professionalYearlySubscription: Double = 4999.0
+    static let professionalServiceCommission: Double = 10.0 // percentage
 }

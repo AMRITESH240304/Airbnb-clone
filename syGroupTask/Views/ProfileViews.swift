@@ -14,6 +14,7 @@ struct ProfileViews: View {
     @State private var showLoginView = false
     @State private var showIncomeSheet = false
     @State private var showTransactionSheet = false
+    @State private var showProfessionalRegistration = false
     
     var body: some View {
         NavigationStack {
@@ -32,6 +33,10 @@ struct ProfileViews: View {
         }
         .sheet(isPresented: $showTransactionSheet) {
             TransactionHistoryView()
+                .environmentObject(cloudkitViewModel)
+        }
+        .sheet(isPresented: $showProfessionalRegistration) {
+            ProfessionalRegistrationView()
                 .environmentObject(cloudkitViewModel)
         }
     }
@@ -172,11 +177,23 @@ struct ProfileViews: View {
                 .cornerRadius(16)
                 
                 HStack(spacing: 16) {
-                    ProfileOptionCard(
-                        image: "bag",
-                        title: "Become a Professional",
-                        badge: true
-                    )
+                    if !cloudkitViewModel.isUserProfessional() {
+                        Button(action: {
+                            showProfessionalRegistration = true
+                        }) {
+                            ProfileOptionCard(
+                                image: "bag",
+                                title: "Become a Professional",
+                                badge: true
+                            )
+                        }
+                    } else {
+                        ProfileOptionCard(
+                            image: "bag",
+                            title: "Professional Account",
+                            subtitle: "Active"
+                        )
+                    }
                     
                     ProfileOptionCard(
                         image: "people",
@@ -227,6 +244,7 @@ struct ProfileViews: View {
         .onAppear {
             cloudkitViewModel.fetchUserPayments(forceRefresh: true)
             cloudkitViewModel.fetchUserRevenue()
+            cloudkitViewModel.fetchAllProfessionals()
         }
     }
 }

@@ -37,6 +37,10 @@ class CloudkitManagerViewModel: ObservableObject {
     }
     private var _cachedUserID: String?
 
+    @Published var professionals: [Professional] = []
+    @Published var hasLoadedProfessionals = false
+    @Published var currentUserProfessional: Professional?
+
     init() {
         container = CKContainer.default()
         publicDB = container.publicCloudDatabase
@@ -915,5 +919,195 @@ class CloudkitManagerViewModel: ObservableObject {
             typeRevenue: typeRevenue,
             monthlyData: monthlyData
         )
+    }
+    
+    // MARK: - Professional Methods
+    
+    func processProfessionalRegistrationPayment(completion: @escaping (Result<Payment, Error>) -> Void) {
+        fetchUserID { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let userID):
+                let amount = RevenueConfig.professionalRegistrationFee
+                let platformFeeAmount = amount * (RevenueConfig.platformFeePercentage / 100)
+                let netAmount = amount - platformFeeAmount
+                
+                let payment = Payment(
+                    id: UUID(),
+                    recordID: nil,
+                    propertyID: UUID(), // Placeholder - not property related
+                    propertyTitle: "Professional Registration",
+                    propertyLocation: "Platform Service",
+                    payerID: userID,
+                    payerName: "Current User",
+                    recipientID: "platform",
+                    recipientName: "Platform",
+                    amount: amount,
+                    paymentType: .professionalRegistration,
+                    paymentMethod: .upi,
+                    paymentStatus: .completed,
+                    transactionDate: Date(),
+                    description: "Professional registration fee",
+                    platformFeePercentage: RevenueConfig.platformFeePercentage,
+                    platformFeeAmount: platformFeeAmount,
+                    netAmount: netAmount
+                )
+                
+                let record = payment.toCKRecord()
+                
+                self.publicDB.save(record) { (savedRecord, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        guard let savedRecord = savedRecord else {
+                            let error = NSError(domain: "PaymentManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to save payment record"])
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        var savedPayment = payment
+                        savedPayment.recordID = savedRecord.recordID
+                        self.userPayments.append(savedPayment)
+                        
+                        completion(.success(savedPayment))
+                    }
+                }
+                
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func createProfessionalProfile(from formData: ProfessionalRegistrationFormData, completion: @escaping (Result<Professional, Error>) -> Void) {
+        fetchUserID { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let userID):
+                let experience = Int(formData.experience) ?? 0
+                
+                // Ensure we have at least one category
+                let categories = Array(formData.selectedCategories)
+                guard !categories.isEmpty else {
+                    let error = NSError(domain: "ProfessionalCreation", code: 1, userInfo: [NSLocalizedDescriptionKey: "At least one category must be selected"])
+                    completion(.failure(error))
+                    return
+                }
+                
+                let professional = Professional(
+                    id: UUID(),
+                    recordID: nil,
+                    userID: userID,
+                    userName: "Current User", // Get from user profile
+                    businessName: formData.businessName,
+                    description: formData.description,
+                    phoneNumber: formData.phoneNumber,
+                    email: formData.email,
+                    location: formData.location,
+                    website: formData.website.isEmpty ? nil : formData.website,
+                    services: formData.services, // Can be empty
+                    categories: categories,
+                    experience: experience,
+                    profileImageURL: formData.profileImageURL.isEmpty ? nil : formData.profileImageURL,
+                    portfolioImages: formData.portfolioImages, // Can be empty
+                    rating: 0.0,
+                    reviewCount: 0,
+                    isVerified: false,
+                    isPremium: false,
+                    registrationDate: Date(),
+                    subscriptionEndDate: Calendar.current.date(byAdding: .year, value: 1, to: Date()),
+                    status: .active
+                )
+                
+                let record = professional.toCKRecord()
+                
+                self.publicDB.save(record) { (savedRecord, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        guard let savedRecord = savedRecord else {
+                            let error = NSError(domain: "CloudKitManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to save professional record"])
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        var savedProfessional = professional
+                        savedProfessional.recordID = savedRecord.recordID
+                        self.professionals.append(savedProfessional)
+                        self.currentUserProfessional = savedProfessional
+                        
+                        completion(.success(savedProfessional))
+                    }
+                }
+                
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func fetchAllProfessionals(forceRefresh: Bool = false) {
+        if hasLoadedProfessionals && !forceRefresh && !professionals.isEmpty {
+            return
+        }
+        
+        isLoading = true
+        
+        let predicate = NSPredicate(format: "status == %@", ProfessionalStatus.active.rawValue)
+        let query = CKQuery(recordType: "Professional", predicate: predicate)
+        query.sortDescriptors = [NSSortDescriptor(key: "registrationDate", ascending: false)]
+        
+        let operation = CKQueryOperation(query: query)
+        operation.resultsLimit = CKQueryOperation.maximumResults
+        
+        var fetchedRecords: [CKRecord] = []
+        
+        operation.recordMatchedBlock = { (_, result) in
+            switch result {
+            case .success(let record):
+                fetchedRecords.append(record)
+            case .failure(let error):
+                print("Error fetching professional record: \(error)")
+            }
+        }
+        
+        operation.queryResultBlock = { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                
+                self.isLoading = false
+                
+                switch result {
+                case .success:
+                    let professionals = fetchedRecords.compactMap { Professional.fromCKRecord($0) }
+                    self.professionals = professionals
+                    self.hasLoadedProfessionals = true
+                    
+                case .failure(let error):
+                    self.errorMessage = error.localizedDescription
+                    print("Failed to fetch professionals: \(error)")
+                }
+            }
+        }
+        
+        publicDB.add(operation)
+    }
+    
+    func isUserProfessional() -> Bool {
+        guard let userID = cachedUserID else { return false }
+        return professionals.contains { $0.userID == userID && $0.status == .active }
+    }
+    
+    func getCurrentUserProfessional() -> Professional? {
+        guard let userID = cachedUserID else { return nil }
+        return professionals.first { $0.userID == userID }
     }
 }

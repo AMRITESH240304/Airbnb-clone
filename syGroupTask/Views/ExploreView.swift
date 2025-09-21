@@ -71,6 +71,7 @@ struct ExploreView: View {
         .onAppear {
             cloudkitViewModel.fetchAllListings()
             cloudkitViewModel.fetchUserWishlist()
+            cloudkitViewModel.fetchAllProfessionals()
             print("All properties count: \(cloudkitViewModel.allProperties.count)")
         }
     }
@@ -116,9 +117,35 @@ struct ExploreView: View {
 
     var experiencesSection: some View {
         VStack(alignment: .leading, spacing: 24) {
-            Text("Professionals section - Coming soon")
-                .foregroundColor(Theme.textSecondary)
-                .padding(.horizontal)
+            if cloudkitViewModel.isLoading && cloudkitViewModel.professionals.isEmpty {
+                ProgressView("Loading professionals...")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+            } else if cloudkitViewModel.professionals.isEmpty {
+                VStack(spacing: 16) {
+                    Text("No professionals available")
+                        .foregroundColor(Theme.textSecondary)
+                        .padding(.horizontal)
+                    
+                    Button("Refresh") {
+                        cloudkitViewModel.fetchAllProfessionals(forceRefresh: true)
+                    }
+                    .foregroundColor(Theme.primaryColor)
+                }
+            } else {
+                let categorizedProfessionals = Dictionary(grouping: cloudkitViewModel.professionals) { professional in
+                    professional.categories.first?.rawValue ?? "Other"
+                }
+                
+                ForEach(Array(categorizedProfessionals.keys).sorted(), id: \.self) { category in
+                    if let professionals = categorizedProfessionals[category], !professionals.isEmpty {
+                        ProfessionalCategorySectionView(
+                            categoryName: category,
+                            professionals: professionals
+                        )
+                    }
+                }
+            }
         }
     }
     
