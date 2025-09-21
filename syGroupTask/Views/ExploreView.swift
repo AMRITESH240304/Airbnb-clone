@@ -26,16 +26,20 @@ struct ExploreView: View {
                 HStack(spacing: 24) {
                     ForEach(filters, id: \.self) { filter in
                         Button {
-                            selectedFilter = filter
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                selectedFilter = filter
+                            }
                         } label: {
                             VStack {
                                 Text(filter)
                                     .font(.system(size: 16, weight: selectedFilter == filter ? .bold : .regular))
                                     .foregroundColor(selectedFilter == filter ? Theme.textPrimary : Theme.textSecondary)
+                                    .animation(.easeInOut(duration: 0.2), value: selectedFilter)
                                 
                                 Rectangle()
                                     .frame(height: 2)
                                     .foregroundColor(selectedFilter == filter ? Theme.textPrimary : .clear)
+                                    .animation(.easeInOut(duration: 0.3), value: selectedFilter)
                             }
                         }
                     }
@@ -44,13 +48,20 @@ struct ExploreView: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
-                        if selectedFilter == "Real Estate" {
-                            realEstateSection
-                        } else if selectedFilter == "Professionals" {
-                            experiencesSection
-                        } else if selectedFilter == "Services" {
-                            servicesSection
+                        Group {
+                            if selectedFilter == "Real Estate" {
+                                realEstateSection
+                            } else if selectedFilter == "Professionals" {
+                                experiencesSection
+                            } else if selectedFilter == "Services" {
+                                servicesSection
+                            }
                         }
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
+                        .animation(.easeInOut(duration: 0.4), value: selectedFilter)
                     }
                 }
                 
