@@ -41,6 +41,11 @@ class CloudkitManagerViewModel: ObservableObject {
     @Published var hasLoadedProfessionals = false
     @Published var currentUserProfessional: Professional?
 
+    // Add these properties to the class
+    @Published var collaborations: [Collaboration] = []
+    @Published var hasLoadedCollaborations = false
+    @Published var currentUserCollaboration: Collaboration?
+
     init() {
         container = CKContainer.default()
         publicDB = container.publicCloudDatabase
@@ -1178,6 +1183,302 @@ class CloudkitManagerViewModel: ObservableObject {
                     paymentStatus: .completed,
                     transactionDate: Date(),
                     description: "Contact fee for professional: \(professional.businessName)",
+                    platformFeePercentage: RevenueConfig.platformFeePercentage,
+                    platformFeeAmount: platformFeeAmount,
+                    netAmount: netAmount
+                )
+                
+                let record = payment.toCKRecord()
+                
+                self.publicDB.save(record) { (savedRecord, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            self.errorMessage = error.localizedDescription
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        guard let savedRecord = savedRecord else {
+                            let error = NSError(
+                                domain: "PaymentManager",
+                                code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: "Failed to save payment record"]
+                            )
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        var savedPayment = payment
+                        savedPayment.recordID = savedRecord.recordID
+                        self.userPayments.append(savedPayment)
+                        
+                        completion(.success(savedPayment))
+                    }
+                }
+                
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+    
+    // Add these methods to the CloudkitManagerViewModel class
+
+    // MARK: - Collaboration Methods
+
+    func processCollaborationRegistrationPayment(completion: @escaping (Result<Payment, Error>) -> Void) {
+        fetchUserID { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let userID):
+                let amount = RevenueConfig.collaborationRegistrationFee
+                let platformFeeAmount = amount * (RevenueConfig.platformFeePercentage / 100)
+                let netAmount = amount - platformFeeAmount
+                
+                let payment = Payment(
+                    id: UUID(),
+                    recordID: nil,
+                    propertyID: UUID(), // Placeholder - not property related
+                    propertyTitle: "Collaboration Registration",
+                    propertyLocation: "Platform Service",
+                    payerID: userID,
+                    payerName: "Current User",
+                    recipientID: "platform",
+                    recipientName: "Platform",
+                    amount: amount,
+                    paymentType: .collaborationRegistration,
+                    paymentMethod: .upi,
+                    paymentStatus: .completed,
+                    transactionDate: Date(),
+                    description: "Collaboration registration fee",
+                    platformFeePercentage: RevenueConfig.platformFeePercentage,
+                    platformFeeAmount: platformFeeAmount,
+                    netAmount: netAmount
+                )
+                
+                let record = payment.toCKRecord()
+                
+                self.publicDB.save(record) { (savedRecord, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        guard let savedRecord = savedRecord else {
+                            let error = NSError(domain: "PaymentManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to save payment record"])
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        var savedPayment = payment
+                        savedPayment.recordID = savedRecord.recordID
+                        self.userPayments.append(savedPayment)
+                        
+                        completion(.success(savedPayment))
+                    }
+                }
+                
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func createCollaborationProfile(from formData: CollaborationRegistrationFormData, completion: @escaping (Result<Collaboration, Error>) -> Void) {
+        fetchUserID { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let userID):
+                let collaboration = Collaboration(
+                    id: UUID(),
+                    recordID: nil,
+                    userID: userID,
+                    userName: "Current User",
+                    businessName: formData.businessName,
+                    businessType: formData.businessType,
+                    collaborationType: formData.collaborationType,
+                    description: formData.description,
+                    location: formData.location,
+                    contactEmail: formData.contactEmail,
+                    contactPhone: formData.contactPhone,
+                    website: formData.website.isEmpty ? nil : formData.website,
+                    logoImageURL: formData.logoImageURL.isEmpty ? nil : formData.logoImageURL,
+                    businessImages: [], // Start with empty array - can be updated later
+                    investmentRange: formData.investmentRange,
+                    expectedROI: formData.expectedROI,
+                    businessModel: formData.businessModel,
+                    experienceRequired: formData.experienceRequired,
+                    supportProvided: Array(formData.supportProvided), // Convert Set to Array
+                    isVerified: false,
+                    isPremium: false,
+                    rating: 0.0,
+                    reviewCount: 0,
+                    registrationDate: Date(),
+                    status: .active
+                )
+                
+                let record = collaboration.toCKRecord()
+                
+                self.publicDB.save(record) { (savedRecord, error) in
+                    DispatchQueue.main.async {
+                        if let error = error {
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        guard let savedRecord = savedRecord else {
+                            let error = NSError(domain: "CloudKitManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to save collaboration record"])
+                            completion(.failure(error))
+                            return
+                        }
+                        
+                        var savedCollaboration = collaboration
+                        savedCollaboration.recordID = savedRecord.recordID
+                        self.collaborations.append(savedCollaboration)
+                        self.currentUserCollaboration = savedCollaboration
+                        
+                        completion(.success(savedCollaboration))
+                    }
+                }
+                
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func fetchAllCollaborations(forceRefresh: Bool = false) {
+        if hasLoadedCollaborations && !forceRefresh && !collaborations.isEmpty {
+            return
+        }
+        
+        isLoading = true
+        
+        let predicate = NSPredicate(format: "status == %@", CollaborationStatus.active.rawValue)
+        let query = CKQuery(recordType: "Collaboration", predicate: predicate)
+        query.sortDescriptors = [NSSortDescriptor(key: "registrationDate", ascending: false)]
+        
+        let operation = CKQueryOperation(query: query)
+        operation.resultsLimit = CKQueryOperation.maximumResults
+        
+        var fetchedRecords: [CKRecord] = []
+        
+        operation.recordMatchedBlock = { (_, result) in
+            switch result {
+            case .success(let record):
+                fetchedRecords.append(record)
+            case .failure(let error):
+                print("Error fetching collaboration record: \(error)")
+            }
+        }
+        
+        operation.queryResultBlock = { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                
+                self.isLoading = false
+                
+                switch result {
+                case .success:
+                    let collaborations = fetchedRecords.compactMap { Collaboration.fromCKRecord($0) }
+                    self.collaborations = collaborations
+                    self.hasLoadedCollaborations = true
+                    
+                case .failure(let error):
+                    self.errorMessage = error.localizedDescription
+                    print("Failed to fetch collaborations: \(error)")
+                }
+            }
+        }
+        
+        publicDB.add(operation)
+    }
+    
+    func isUserCollaborator() -> Bool {
+        guard let userID = cachedUserID else { return false }
+        return collaborations.contains { $0.userID == userID && $0.status == .active }
+    }
+    
+    func getCurrentUserCollaboration() -> Collaboration? {
+        guard let userID = cachedUserID else { return nil }
+        return collaborations.first { $0.userID == userID }
+    }
+    
+    func hasUserPaidForCollaborationContact(collaboration: Collaboration) -> Bool {
+        guard let cachedUserID = cachedUserID else { return false }
+        
+        return userPayments.contains { payment in
+            payment.propertyID == collaboration.id &&
+            payment.payerID == cachedUserID &&
+            payment.paymentType == .collaborationContact &&
+            payment.paymentStatus == .completed
+        }
+    }
+    
+    func processCollaborationContactPayment(
+        collaboration: Collaboration,
+        completion: @escaping (Result<Payment, Error>) -> Void
+    ) {
+        fetchUserID { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let userID):
+                // Check if user has already paid for this collaboration contact
+                let hasAlreadyPaid = self.userPayments.contains { payment in
+                    payment.propertyID == collaboration.id &&
+                    payment.payerID == userID &&
+                    payment.paymentType == .collaborationContact &&
+                    payment.paymentStatus == .completed
+                }
+                
+                if hasAlreadyPaid {
+                    let error = NSError(
+                        domain: "PaymentManager",
+                        code: 100,
+                        userInfo: [NSLocalizedDescriptionKey: "Already paid for this collaboration contact"]
+                    )
+                    completion(.failure(error))
+                    return
+                }
+                
+                // Check if user is trying to pay for their own collaboration
+                if collaboration.userID == userID {
+                    let error = NSError(
+                        domain: "PaymentManager",
+                        code: 101,
+                        userInfo: [NSLocalizedDescriptionKey: "Cannot pay to contact your own collaboration"]
+                    )
+                    completion(.failure(error))
+                    return
+                }
+                
+                let amount = RevenueConfig.contactOwnerFee
+                let platformFeeAmount = amount * (RevenueConfig.platformFeePercentage / 100)
+                let netAmount = amount - platformFeeAmount
+                
+                let payment = Payment(
+                    id: UUID(),
+                    recordID: nil,
+                    propertyID: collaboration.id,
+                    propertyTitle: collaboration.businessName,
+                    propertyLocation: collaboration.location,
+                    payerID: userID,
+                    payerName: "Current User",
+                    recipientID: collaboration.userID,
+                    recipientName: collaboration.userName,
+                    amount: amount,
+                    paymentType: .collaborationContact,
+                    paymentMethod: .upi,
+                    paymentStatus: .completed,
+                    transactionDate: Date(),
+                    description: "Contact fee for collaboration: \(collaboration.businessName)",
                     platformFeePercentage: RevenueConfig.platformFeePercentage,
                     platformFeeAmount: platformFeeAmount,
                     netAmount: netAmount

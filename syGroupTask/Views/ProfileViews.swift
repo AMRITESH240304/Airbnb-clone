@@ -15,6 +15,7 @@ struct ProfileViews: View {
     @State private var showIncomeSheet = false
     @State private var showTransactionSheet = false
     @State private var showProfessionalRegistration = false
+    @State private var showCollaborationRegistration = false
     
     var body: some View {
         NavigationStack {
@@ -37,6 +38,10 @@ struct ProfileViews: View {
         }
         .sheet(isPresented: $showProfessionalRegistration) {
             ProfessionalRegistrationView()
+                .environmentObject(cloudkitViewModel)
+        }
+        .sheet(isPresented: $showCollaborationRegistration) {
+            CollaborationRegistrationView()
                 .environmentObject(cloudkitViewModel)
         }
     }
@@ -195,11 +200,23 @@ struct ProfileViews: View {
                         )
                     }
                     
-                    ProfileOptionCard(
-                        image: "people",
-                        title: "Business Collaboration / Franchise",
-                        badge: true
-                    )
+                    if !cloudkitViewModel.isUserCollaborator() {
+                        Button(action: {
+                            showCollaborationRegistration = true
+                        }) {
+                            ProfileOptionCard(
+                                image: "people",
+                                title: "Business Collaboration / Franchise",
+                                badge: true
+                            )
+                        }
+                    } else {
+                        ProfileOptionCard(
+                            image: "people",
+                            title: "Business Collaboration",
+                            subtitle: "Active"
+                        )
+                    }
                 }
                 
                 VStack(spacing: 20) {
@@ -245,6 +262,7 @@ struct ProfileViews: View {
             cloudkitViewModel.fetchUserPayments(forceRefresh: true)
             cloudkitViewModel.fetchUserRevenue()
             cloudkitViewModel.fetchAllProfessionals()
+            cloudkitViewModel.fetchAllCollaborations()
         }
     }
 }

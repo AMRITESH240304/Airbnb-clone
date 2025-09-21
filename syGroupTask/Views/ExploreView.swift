@@ -72,6 +72,7 @@ struct ExploreView: View {
             cloudkitViewModel.fetchAllListings()
             cloudkitViewModel.fetchUserWishlist()
             cloudkitViewModel.fetchAllProfessionals()
+            cloudkitViewModel.fetchAllCollaborations()
         }
     }
 
@@ -150,9 +151,35 @@ struct ExploreView: View {
     
     var servicesSection: some View {
         VStack(alignment: .leading, spacing: 24) {
-            Text("Services section - Coming soon")
-                .foregroundColor(Theme.textSecondary)
-                .padding(.horizontal)
+            if cloudkitViewModel.isLoading && cloudkitViewModel.collaborations.isEmpty {
+                ProgressView("Loading collaborations...")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+            } else if cloudkitViewModel.collaborations.isEmpty {
+                VStack(spacing: 16) {
+                    Text("No collaborations available")
+                        .foregroundColor(Theme.textSecondary)
+                        .padding(.horizontal)
+                    
+                    Button("Refresh") {
+                        cloudkitViewModel.fetchAllCollaborations(forceRefresh: true)
+                    }
+                    .foregroundColor(Theme.primaryColor)
+                }
+            } else {
+                let categorizedCollaborations = Dictionary(grouping: cloudkitViewModel.collaborations) { collaboration in
+                    collaboration.collaborationType.rawValue
+                }
+                
+                ForEach(Array(categorizedCollaborations.keys).sorted(), id: \.self) { category in
+                    if let collaborations = categorizedCollaborations[category], !collaborations.isEmpty {
+                        CollaborationCategorySectionView(
+                            categoryName: category,
+                            collaborations: collaborations
+                        )
+                    }
+                }
+            }
         }
     }
 }
