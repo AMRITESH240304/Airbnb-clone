@@ -46,9 +46,7 @@ class CloudkitManagerViewModel: ObservableObject {
         publicDB = container.publicCloudDatabase
         privateDB = container.privateCloudDatabase
         
-        // Cache user ID on initialization
         cacheUserID()
-        // Fetch user payments on initialization
         fetchUserPayments()
     }
 

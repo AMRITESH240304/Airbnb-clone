@@ -72,7 +72,6 @@ struct ExploreView: View {
             cloudkitViewModel.fetchAllListings()
             cloudkitViewModel.fetchUserWishlist()
             cloudkitViewModel.fetchAllProfessionals()
-            print("All properties count: \(cloudkitViewModel.allProperties.count)")
         }
     }
 

@@ -89,16 +89,23 @@ struct PropertyDetailView: View {
             // Set the cloudkit instance in viewModel from environment
             viewModel.setCloudkitViewModel(cloudkitViewModel)
             viewModel.updateWishlistStatus()
+            // Force refresh user payments to get latest payment status
+            cloudkitViewModel.fetchUserPayments(forceRefresh: true)
         }
         .onChange(of: cloudkitViewModel.wishlistItems) { _ in
             viewModel.updateWishlistStatus()
         }
         .onChange(of: cloudkitViewModel.userPayments) { _ in
-            // Refresh payment status when payments change
+            // Force UI update when payments change
             viewModel.updateWishlistStatus()
         }
         .alert(viewModel.paymentSuccess ? "Payment Successful!" : "Payment Info", isPresented: $viewModel.showingPaymentAlert) {
-            Button("OK") { }
+            Button("OK") { 
+                // Refresh payments after successful payment
+                if viewModel.paymentSuccess {
+                    cloudkitViewModel.fetchUserPayments(forceRefresh: true)
+                }
+            }
         } message: {
             Text(viewModel.paymentMessage)
         }
@@ -311,6 +318,7 @@ struct PropertyOwnerSection: View {
 struct PropertyBottomActionBar: View {
     let property: PropertyListing
     let viewModel: PropertyDetailViewModel
+    @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
     
     var body: some View {
         VStack {
@@ -341,21 +349,24 @@ struct PropertyBottomActionBar: View {
                             }
                             
                             HStack(spacing: 8) {
-                                if viewModel.hasUserPaidForContact() {
-                                    Image(systemName: "checkmark.circle.fill")
+                                if cloudkitViewModel.hasUserPaidForContact(property: property) {
+                                    Image(systemName: "phone.fill")
+                                        .foregroundColor(.white)
+                                } else {
+                                    Image(systemName: "indianrupeesign.circle")
                                         .foregroundColor(.white)
                                 }
-                                Text(viewModel.getButtonText())
+                                Text(cloudkitViewModel.hasUserPaidForContact(property: property) ? "Contact Owner" : "Pay to Contact")
                             }
                         }
                         .fontWeight(.bold)
-                        .foregroundColor(viewModel.getButtonTextColor())
+                        .foregroundColor(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
-                        .background(viewModel.getButtonColor())
+                        .background(cloudkitViewModel.hasUserPaidForContact(property: property) ? Color.green : Theme.primaryColor)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .disabled(viewModel.isButtonDisabled())
+                    .disabled(viewModel.isProcessingPayment || cloudkitViewModel.isPropertyOwnedByCurrentUser(property))
                 } else {
                     Text("Not Available")
                         .fontWeight(.medium)
