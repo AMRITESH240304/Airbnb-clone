@@ -16,7 +16,6 @@ struct PropertyDetailView: View {
     
     init(property: PropertyListing) {
         self.property = property
-        // Don't pass cloudkitViewModel in init - will be set from environment
         self._viewModel = StateObject(wrappedValue: PropertyDetailViewModel(
             cardId: UUID(), 
             property: property
@@ -92,6 +91,10 @@ struct PropertyDetailView: View {
             viewModel.updateWishlistStatus()
         }
         .onChange(of: cloudkitViewModel.wishlistItems) { _ in
+            viewModel.updateWishlistStatus()
+        }
+        .onChange(of: cloudkitViewModel.userPayments) { _ in
+            // Refresh payment status when payments change
             viewModel.updateWishlistStatus()
         }
         .alert(viewModel.paymentSuccess ? "Payment Successful!" : "Payment Info", isPresented: $viewModel.showingPaymentAlert) {

@@ -38,6 +38,8 @@ class PropertyDetailViewModel: ObservableObject {
     // Add this function to set cloudkit from environment
     func setCloudkitViewModel(_ viewModel: CloudkitManagerViewModel) {
         self.cloudkitViewModel = viewModel
+        // Fetch user payments when CloudKit is set
+        viewModel.fetchUserPayments()
     }
     
     // MARK: - Setup Methods
@@ -164,6 +166,8 @@ class PropertyDetailViewModel: ObservableObject {
                     self.paymentSuccess = true
                     self.paymentMessage = "Payment Successful! ₹\(Int(payment.amount)) paid to \(payment.recipientName).\n\nContact Details:\nPhone: +91 98765 43210\nEmail: owner@example.com"
                     self.showingPaymentAlert = true
+                    // Refresh payments after successful payment
+                    cloudkitViewModel.fetchUserPayments(forceRefresh: true)
                 case .failure(let error):
                     self.paymentSuccess = false
                     self.paymentMessage = "Payment failed: \(error.localizedDescription)"
@@ -213,14 +217,11 @@ class PropertyDetailViewModel: ObservableObject {
     
     func handleButtonAction() {
         if isCurrentUserOwner() {
-            // Do nothing for owner
             return
         } else if hasUserPaidForContact() {
-            // Show contact info directly
             paymentMessage = "Contact Owner: \(property.ownerName)\nPhone: +91 98765 43210\nEmail: owner@example.com"
             showingPaymentAlert = true
         } else {
-            // Process payment directly
             processPayment()
         }
     }

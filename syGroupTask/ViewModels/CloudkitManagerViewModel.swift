@@ -36,6 +36,8 @@ class CloudkitManagerViewModel: ObservableObject {
         
         // Cache user ID on initialization
         cacheUserID()
+        // Fetch user payments on initialization
+        fetchUserPayments()
     }
 
     func fetchUserID(completion: @escaping (Result<String, Error>) -> Void) {
@@ -149,6 +151,24 @@ class CloudkitManagerViewModel: ObservableObject {
 
     // MARK: - Payment Methods
     
+    func hasUserPaidForContact(property: PropertyListing) -> Bool {
+        guard let cachedUserID = cachedUserID else { return false }
+        
+        return userPayments.contains { payment in
+            payment.propertyID == property.id &&
+            payment.payerID == cachedUserID &&
+            payment.paymentType == .propertyContact &&
+            payment.paymentStatus == .completed
+        }
+    }
+    
+    func canUserContactOwner(property: PropertyListing) -> Bool {
+        let hasPaid = hasUserPaidForContact(property: property)
+        let isOwner = isPropertyOwnedByCurrentUser(property)
+        
+        return hasPaid && !isOwner
+    }
+    
     func processContactOwnerPayment(
         property: PropertyListing,
         completion: @escaping (Result<Payment, Error>) -> Void
@@ -159,17 +179,22 @@ class CloudkitManagerViewModel: ObservableObject {
             switch result {
             case .success(let userID):
                 // Check if user has already paid for this property contact
-                if self.userPayments.contains(where: { 
-                    $0.propertyID == property.id && 
-                    $0.payerID == userID && 
-                    $0.paymentType == .propertyContact &&
-                    $0.paymentStatus == .completed 
-                }) {
-                    // User has already paid, allow contact
+                if self.hasUserPaidForContact(property: property) {
                     let error = NSError(
                         domain: "PaymentManager",
                         code: 100,
                         userInfo: [NSLocalizedDescriptionKey: "Already paid for this contact"]
+                    )
+                    completion(.failure(error))
+                    return
+                }
+                
+                // Check if user is trying to pay for their own property
+                if self.isPropertyOwnedByCurrentUser(property) {
+                    let error = NSError(
+                        domain: "PaymentManager",
+                        code: 101,
+                        userInfo: [NSLocalizedDescriptionKey: "Cannot pay to contact your own property"]
                     )
                     completion(.failure(error))
                     return
@@ -183,6 +208,8 @@ class CloudkitManagerViewModel: ObservableObject {
                     id: UUID(),
                     recordID: nil,
                     propertyID: property.id,
+                    propertyTitle: property.title,
+                    propertyLocation: property.location,
                     payerID: userID,
                     payerName: "Current User",
                     recipientID: property.ownerID,
@@ -200,7 +227,8 @@ class CloudkitManagerViewModel: ObservableObject {
                 
                 let record = payment.toCKRecord()
                 
-                self.privateDB.save(record) { (savedRecord, error) in
+                // Changed from privateDB to publicDB for development
+                self.publicDB.save(record) { (savedRecord, error) in
                     DispatchQueue.main.async {
                         if let error = error {
                             self.errorMessage = error.localizedDescription
@@ -237,33 +265,7 @@ class CloudkitManagerViewModel: ObservableObject {
             }
         }
     }
-    
-    func hasUserPaidForContact(property: PropertyListing) -> Bool {
-        // Check local payments cache for immediate UI response
-        return userPayments.contains { payment in
-            payment.propertyID == property.id &&
-            payment.paymentType == .propertyContact &&
-            payment.paymentStatus == .completed
-        }
-    }
-    
-    func canUserContactOwner(property: PropertyListing) -> Bool {
-        // First check if user has paid
-        let hasPaid = hasUserPaidForContact(property: property)
-        
-        // For ownership check, we need to use a stored user ID
-        // You might want to store the current user ID when app starts
-        return hasPaid && !isCurrentUserProperty(property: property)
-    }
-    
-    // Helper function to check if current user owns the property
-    func isCurrentUserProperty(property: PropertyListing) -> Bool {
-        // This should ideally use a cached user ID for immediate response
-        // For now, we'll return false and let the UI handle the async check
-        return false
-    }
-    
-    // Add this function to get user ID synchronously when available
+
     private var cachedUserID: String?
     
     func cacheUserID() {
@@ -274,7 +276,6 @@ class CloudkitManagerViewModel: ObservableObject {
         }
     }
     
-    // Updated function that uses cached user ID
     func isPropertyOwnedByCurrentUser(_ property: PropertyListing) -> Bool {
         return cachedUserID == property.ownerID
     }
@@ -289,6 +290,8 @@ class CloudkitManagerViewModel: ObservableObject {
             
             switch result {
             case .success(let userID):
+                self.isLoading = true
+                
                 let predicate = NSPredicate(format: "payerID == %@", userID)
                 let query = CKQuery(recordType: "Payment", predicate: predicate)
                 query.sortDescriptors = [NSSortDescriptor(key: "transactionDate", ascending: false)]
@@ -303,9 +306,7 @@ class CloudkitManagerViewModel: ObservableObject {
                     case .success(let record):
                         fetchedRecords.append(record)
                     case .failure(let error):
-                        DispatchQueue.main.async {
-                            self.errorMessage = error.localizedDescription
-                        }
+                        print("Error fetching payment record: \(error)")
                     }
                 }
                 
@@ -313,23 +314,28 @@ class CloudkitManagerViewModel: ObservableObject {
                     DispatchQueue.main.async {
                         guard let self = self else { return }
                         
+                        self.isLoading = false
+                        
                         switch result {
                         case .success:
-                            self.userPayments = fetchedRecords.compactMap {
-                                Payment.fromCKRecord($0)
-                            }
+                            let payments = fetchedRecords.compactMap { Payment.fromCKRecord($0) }
+                            self.userPayments = payments
                             self.hasLoadedPayments = true
+                            
                         case .failure(let error):
                             self.errorMessage = error.localizedDescription
+                            print("Failed to fetch user payments: \(error)")
                         }
                     }
                 }
                 
-                self.privateDB.add(operation)
+                // Changed from privateDB to publicDB for development
+                self.publicDB.add(operation)
                 
             case .failure(let error):
                 DispatchQueue.main.async {
                     self.errorMessage = error.localizedDescription
+                    print("Failed to get user ID: \(error)")
                 }
             }
         }

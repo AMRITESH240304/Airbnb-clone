@@ -8,11 +8,13 @@
 import Foundation
 import CloudKit
 
-struct Payment: Identifiable {
+struct Payment: Identifiable,Equatable {
     var id: UUID
     var recordID: CKRecord.ID?
     
     var propertyID: UUID
+    var propertyTitle: String
+    var propertyLocation: String
     var payerID: String
     var payerName: String
     var recipientID: String
@@ -42,6 +44,8 @@ struct Payment: Identifiable {
         
         record["id"] = id.uuidString
         record["propertyID"] = propertyID.uuidString
+        record["propertyTitle"] = propertyTitle
+        record["propertyLocation"] = propertyLocation
         record["payerID"] = payerID
         record["payerName"] = payerName
         record["recipientID"] = recipientID
@@ -65,6 +69,8 @@ struct Payment: Identifiable {
             let id = UUID(uuidString: idString),
             let propertyIDString = record["propertyID"] as? String,
             let propertyID = UUID(uuidString: propertyIDString),
+            let propertyTitle = record["propertyTitle"] as? String,
+            let propertyLocation = record["propertyLocation"] as? String,
             let payerID = record["payerID"] as? String,
             let payerName = record["payerName"] as? String,
             let recipientID = record["recipientID"] as? String,
@@ -89,6 +95,8 @@ struct Payment: Identifiable {
             id: id,
             recordID: record.recordID,
             propertyID: propertyID,
+            propertyTitle: propertyTitle,
+            propertyLocation: propertyLocation,
             payerID: payerID,
             payerName: payerName,
             recipientID: recipientID,
