@@ -349,21 +349,24 @@ struct PropertyBottomActionBar: View {
                             }
                             
                             HStack(spacing: 8) {
-                                if cloudkitViewModel.hasUserPaidForContact(property: property) {
+                                if cloudkitViewModel.isPropertyOwnedByCurrentUser(property) {
+                                    Image(systemName: "house.fill")
+                                        .foregroundColor(.white)
+                                } else if cloudkitViewModel.hasUserPaidForContact(property: property) {
                                     Image(systemName: "phone.fill")
                                         .foregroundColor(.white)
                                 } else {
                                     Image(systemName: "indianrupeesign.circle")
                                         .foregroundColor(.white)
                                 }
-                                Text(cloudkitViewModel.hasUserPaidForContact(property: property) ? "Contact Owner" : "Pay to Contact")
+                                Text(cloudkitViewModel.isPropertyOwnedByCurrentUser(property) ? "It's your property" : (cloudkitViewModel.hasUserPaidForContact(property: property) ? "Contact Owner" : "Pay to Contact"))
                             }
                         }
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
-                        .background(cloudkitViewModel.hasUserPaidForContact(property: property) ? Color.green : Theme.primaryColor)
+                        .background(cloudkitViewModel.isPropertyOwnedByCurrentUser(property) ? Color.blue : (cloudkitViewModel.hasUserPaidForContact(property: property) ? Color.green : Theme.primaryColor))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     .disabled(viewModel.isProcessingPayment || cloudkitViewModel.isPropertyOwnedByCurrentUser(property))
