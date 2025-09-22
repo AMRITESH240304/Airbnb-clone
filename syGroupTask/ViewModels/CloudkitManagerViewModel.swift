@@ -9,6 +9,13 @@ import CloudKit
 import Combine
 import Foundation
 
+extension CloudkitManagerViewModel {
+    func getPaymentsForOwner() -> [Payment] {
+        guard let userID = cachedUserID else { return [] }
+        return userPayments.filter { $0.recipientID == userID && $0.paymentStatus == .completed }
+    }
+}
+
 class CloudkitManagerViewModel: ObservableObject {
     @Published var hasLoadedUserProperties = false
     @Published var hasLoadedAllProperties = false

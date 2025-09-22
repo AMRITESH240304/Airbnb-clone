@@ -60,6 +60,12 @@ struct ProfessionalCard: View {
             }
             .frame(width: 60, height: 60)
             .clipShape(Circle())
+            .overlay(
+                // Always show the blue tick
+                Image(systemName: "checkmark.seal.fill")
+                    .foregroundColor(.blue)
+                    .offset(x: 20, y: 20) // Position the tick mark
+            )
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(professional.businessName)
@@ -88,12 +94,6 @@ struct ProfessionalCard: View {
                         .foregroundColor(Theme.textSecondary)
                     
                     Spacer()
-                    
-                    if professional.isVerified {
-                        Image(systemName: "checkmark.seal.fill")
-                            .foregroundColor(.blue)
-                            .font(.caption)
-                    }
                 }
                 
                 Text("₹\(Int(professional.services.first?.price ?? 0))+")
@@ -163,10 +163,9 @@ struct ProfessionalListCard: View {
                     
                     Spacer()
                     
-                    if professional.isVerified {
-                        Image(systemName: "checkmark.seal.fill")
-                            .foregroundColor(.blue)
-                    }
+                    // Always show the blue tick
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundColor(.blue)
                 }
                 
                 Text(professional.description)
