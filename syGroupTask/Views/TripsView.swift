@@ -88,17 +88,10 @@ struct TripsView: View {
                 emptyStateView
             } else {
                 VStack(alignment: .leading) {
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.adaptive(minimum: 160), spacing: 16)
-                        ],
-                        spacing: 20
-                    ) {
+                    LazyVStack(spacing: 16) { // Changed from LazyVGrid to LazyVStack
                         ForEach(cloudKitManager.userProperties) { property in
                             NavigationLink(
-                                destination: CardsDetailView(
-                                    cardId: property.id
-                                )
+                                destination: PropertyDetailView(property: property)
                             ) {
                                 propertyCard(for: property)
                             }
@@ -163,23 +156,24 @@ struct TripsView: View {
     }
 
     private func propertyCard(for property: PropertyListing) -> some View {
-        CardsView(
-            flatName: property.title,
-            location: property.location,
-            cost: formattedPrice(for: property),
-            rating: 4.5,  
-            label: property.listingType.rawValue,
-            imageName: "",
-            imageURL: property.photoURLs.first
-        )
-    }
+        VStack(alignment: .leading, spacing: 8) {
+            // Reuse PropertyImageCarousel from PropertyDetailView
+            PropertyImageCarousel(photoURLs: property.photoURLs)
+                .frame(height: 120) // Adjust height to fit the grid
+                .clipShape(RoundedRectangle(cornerRadius: 8)) // Smaller corner radius for compact design
 
-    private func formattedPrice(for property: PropertyListing) -> String {
-        if property.listingType == .forSale {
-            return "$\(Int(property.price))"
-        } else {
-            return "$\(Int(property.price))/month"
+            // Reuse PropertyHeaderSection
+            PropertyHeaderSection(property: property)
+                .padding(.horizontal, 4) // Reduce padding for compact layout
+
+            // Reuse PropertyPriceSection
+            PropertyPriceSection(property: property, viewModel: PropertyDetailViewModel(cardId: property.id, property: property))
+                .padding(.horizontal, 4) // Reduce padding for compact layout
         }
+        .padding(8) // Reduce overall padding
+        .background(Color(.systemGray6))
+        .cornerRadius(12) // Adjust corner radius for compact design
+        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 }
 
