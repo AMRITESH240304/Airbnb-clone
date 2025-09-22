@@ -234,18 +234,9 @@ struct ProfileViews: View {
                         }) {
                             ProfileListItem(icon: "list.bullet.rectangle", title: "Transaction History", showBadge: false)
                         }
-                        
-                        ProfileListItem(icon: "gearshape.fill", title: "Account settings", showBadge: true)
-                        ProfileListItem(icon: "questionmark.circle", title: "Get help")
-                        ProfileListItem(icon: "person", title: "View profile")
-                        ProfileListItem(icon: "hand.raised", title: "Privacy")
                     }
                     
                     Section {
-                        ProfileListItem(icon: "person.2", title: "Refer a host")
-                        ProfileListItem(icon: "person.crop.circle.badge.plus", title: "Find a co-host")
-                        ProfileListItem(icon: "book.closed", title: "Legal")
-                        
                         Button(action: {
                             authViewModel.removeUser()
                         }) {

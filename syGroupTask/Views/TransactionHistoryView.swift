@@ -1,13 +1,18 @@
 import SwiftUI
+import Charts
 
 struct TransactionHistoryView: View {
     @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var selectedFilter: TransactionFilter = .all
+    @State private var chartAnimationProgress: CGFloat = 0.0 // State for chart animation
     
     var body: some View {
         NavigationView {
             VStack {
+                // Payment Trend Chart
+                paymentTrendChart
+                
                 // Filter Picker
                 Picker("Filter", selection: $selectedFilter) {
                     ForEach(TransactionFilter.allCases) { filter in
@@ -37,7 +42,39 @@ struct TransactionHistoryView: View {
         }
         .onAppear {
             cloudkitViewModel.fetchAllPayments()
+            withAnimation(.easeOut(duration: 1.0)) {
+                chartAnimationProgress = 1.0 // Trigger chart animation
+            }
         }
+    }
+    
+    private var paymentTrendChart: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Payment Trend")
+                .font(.title3)
+                .fontWeight(.bold)
+                .padding(.horizontal)
+            
+            if !filteredPayments.isEmpty {
+                Chart(filteredPayments) { payment in
+                    LineMark(
+                        x: .value("Date", payment.transactionDate),
+                        y: .value("Amount", chartAnimationProgress * payment.amount)
+                    )
+                    .foregroundStyle(Theme.primaryColor)
+                }
+                .frame(height: 200)
+                .padding(.horizontal)
+            } else {
+                Text("No payment data available")
+                    .foregroundColor(Theme.textSecondary)
+                    .frame(height: 200)
+                    .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.vertical)
+        .background(Color(.systemGray6))
+        .cornerRadius(16)
     }
     
     private var filteredPayments: [Payment] {
