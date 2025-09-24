@@ -264,3 +264,35 @@ class PropertyDetailViewModel: ObservableObject {
         }
     }
 }
+
+// Add this method to your existing PropertyDetailViewModel
+
+extension PropertyDetailViewModel {
+    func processPaymentWithDates(startDate: Date?, endDate: Date?) {
+        guard let cloudkitViewModel = cloudkitViewModel else { return }
+        
+        isProcessingPayment = true
+        
+        cloudkitViewModel.processContactOwnerPayment(
+            property: property,
+            bookingStartDate: startDate,
+            bookingEndDate: endDate
+        ) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.isProcessingPayment = false
+                
+                switch result {
+                case .success(_):
+                    self?.paymentSuccess = true
+                    self?.paymentMessage = "Payment successful! You can now contact the property owner."
+                    
+                case .failure(let error):
+                    self?.paymentSuccess = false
+                    self?.paymentMessage = "Payment failed: \(error.localizedDescription)"
+                }
+                
+                self?.showingPaymentAlert = true
+            }
+        }
+    }
+}

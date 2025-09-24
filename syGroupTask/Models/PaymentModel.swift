@@ -33,6 +33,10 @@ struct Payment: Identifiable,Equatable {
     
     var netAmount: Double
     
+    // Add booking dates
+    var bookingStartDate: Date?
+    var bookingEndDate: Date?
+    
     func toCKRecord() -> CKRecord {
         let record: CKRecord
         
@@ -59,6 +63,13 @@ struct Payment: Identifiable,Equatable {
         record["platformFeePercentage"] = platformFeePercentage
         record["platformFeeAmount"] = platformFeeAmount
         record["netAmount"] = netAmount
+        
+        if let bookingStartDate = bookingStartDate {
+            record["bookingStartDate"] = bookingStartDate
+        }
+        if let bookingEndDate = bookingEndDate {
+            record["bookingEndDate"] = bookingEndDate
+        }
         
         return record
     }
@@ -91,6 +102,9 @@ struct Payment: Identifiable,Equatable {
             return nil
         }
         
+        let bookingStartDate = record["bookingStartDate"] as? Date
+        let bookingEndDate = record["bookingEndDate"] as? Date
+        
         return Payment(
             id: id,
             recordID: record.recordID,
@@ -109,7 +123,9 @@ struct Payment: Identifiable,Equatable {
             description: description,
             platformFeePercentage: platformFeePercentage,
             platformFeeAmount: platformFeeAmount,
-            netAmount: netAmount
+            netAmount: netAmount,
+            bookingStartDate: bookingStartDate,
+            bookingEndDate: bookingEndDate
         )
     }
 }

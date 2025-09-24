@@ -7,6 +7,10 @@ struct DatePickerView: View {
     @Binding var flexibilityOption: DateAndGuestSection.FlexibilityOption
     @Binding var isPresented: Bool
     
+    // Add property and payment callback
+    var property: PropertyListing?
+    var onPaymentAction: ((Date?, Date?) -> Void)?
+    
     @StateObject private var viewModel = DatePickerViewModel()
     
     var body: some View {
@@ -65,10 +69,14 @@ struct DatePickerView: View {
                     
                     Spacer()
                     
-                    Button("Next") {
-                        // Sync back to parent bindings
+                    Button(property != nil ? "Pay & Book" : "Next") {
                         selectedStartDate = viewModel.selectedStartDate
                         selectedEndDate = viewModel.selectedEndDate
+                        
+                        if let property = property, let paymentAction = onPaymentAction {
+                            paymentAction(selectedStartDate, selectedEndDate)
+                        }
+                        
                         isPresented = false
                     }
                     .foregroundColor(Theme.textLight)
@@ -76,6 +84,7 @@ struct DatePickerView: View {
                     .padding(.vertical, 12)
                     .background(Theme.textPrimary)
                     .cornerRadius(8)
+                    .disabled(!viewModel.hasValidDateSelection)
                 }
                 .padding(.horizontal)
                 .padding(.bottom)

@@ -193,6 +193,8 @@ class CloudkitManagerViewModel: ObservableObject {
     
     func processContactOwnerPayment(
         property: PropertyListing,
+        bookingStartDate: Date? = nil,
+        bookingEndDate: Date? = nil,
         completion: @escaping (Result<Payment, Error>) -> Void
     ) {
         fetchUserID { [weak self] result in
@@ -200,7 +202,6 @@ class CloudkitManagerViewModel: ObservableObject {
             
             switch result {
             case .success(let userID):
-                // Check if user has already paid for this property contact
                 if self.hasUserPaidForContact(property: property) {
                     let error = NSError(
                         domain: "PaymentManager",
@@ -211,7 +212,6 @@ class CloudkitManagerViewModel: ObservableObject {
                     return
                 }
                 
-                // Check if user is trying to pay for their own property
                 if self.isPropertyOwnedByCurrentUser(property) {
                     let error = NSError(
                         domain: "PaymentManager",
@@ -225,6 +225,13 @@ class CloudkitManagerViewModel: ObservableObject {
                 let amount = RevenueConfig.contactOwnerFee
                 let platformFeeAmount = amount * (RevenueConfig.platformFeePercentage / 100)
                 let netAmount = amount - platformFeeAmount
+                
+                var description = "Contact fee for property: \(property.title)"
+                if let startDate = bookingStartDate, let endDate = bookingEndDate {
+                    let formatter = DateFormatter()
+                    formatter.dateStyle = .short
+                    description += " (Booking: \(formatter.string(from: startDate)) - \(formatter.string(from: endDate)))"
+                }
                 
                 let payment = Payment(
                     id: UUID(),
@@ -241,15 +248,16 @@ class CloudkitManagerViewModel: ObservableObject {
                     paymentMethod: .upi,
                     paymentStatus: .completed,
                     transactionDate: Date(),
-                    description: "Contact fee for property: \(property.title)",
+                    description: description,
                     platformFeePercentage: RevenueConfig.platformFeePercentage,
                     platformFeeAmount: platformFeeAmount,
-                    netAmount: netAmount
+                    netAmount: netAmount,
+                    bookingStartDate: bookingStartDate,
+                    bookingEndDate: bookingEndDate
                 )
                 
                 let record = payment.toCKRecord()
                 
-                // Changed from privateDB to publicDB for development
                 self.publicDB.save(record) { (savedRecord, error) in
                     DispatchQueue.main.async {
                         if let error = error {
@@ -272,7 +280,6 @@ class CloudkitManagerViewModel: ObservableObject {
                         savedPayment.recordID = savedRecord.recordID
                         self.userPayments.append(savedPayment)
                         
-                        // Update property contact count
                         self.incrementPropertyContactCount(property: property)
                         
                         completion(.success(savedPayment))

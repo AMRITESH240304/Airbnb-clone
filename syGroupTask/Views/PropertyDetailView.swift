@@ -14,6 +14,13 @@ struct PropertyDetailView: View {
     @StateObject private var viewModel: PropertyDetailViewModel
     @Environment(\.dismiss) private var dismiss
     
+    // Add date picker state
+    @State private var showingDatePicker = false
+    @State private var selectedStartDate: Date?
+    @State private var selectedEndDate: Date?
+    @State private var dateSelectionMode: DateAndGuestSection.DateSelectionMode = .dates
+    @State private var flexibilityOption: DateAndGuestSection.FlexibilityOption = .exactDates
+    
     init(property: PropertyListing) {
         self.property = property
         self._viewModel = StateObject(wrappedValue: PropertyDetailViewModel(
@@ -81,33 +88,75 @@ struct PropertyDetailView: View {
                 .padding(.vertical, 8)
             }
             
-            PropertyBottomActionBar(property: property, viewModel: viewModel)
+            PropertyBottomActionBar(
+                property: property, 
+                viewModel: viewModel,
+                showingDatePicker: $showingDatePicker,
+                selectedStartDate: $selectedStartDate,
+                selectedEndDate: $selectedEndDate
+            )
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
+        .sheet(isPresented: $showingDatePicker) {
+            DatePickerView(
+                selectedStartDate: $selectedStartDate,
+                selectedEndDate: $selectedEndDate,
+                dateSelectionMode: $dateSelectionMode,
+                flexibilityOption: $flexibilityOption,
+                isPresented: $showingDatePicker,
+                property: property,
+                onPaymentAction: { startDate, endDate in
+                    processPaymentWithDates(startDate: startDate, endDate: endDate)
+                }
+            )
+        }
         .onAppear {
-            // Set the cloudkit instance in viewModel from environment
             viewModel.setCloudkitViewModel(cloudkitViewModel)
             viewModel.updateWishlistStatus()
-            // Force refresh user payments to get latest payment status
             cloudkitViewModel.fetchUserPayments(forceRefresh: true)
         }
         .onChange(of: cloudkitViewModel.wishlistItems) { _ in
             viewModel.updateWishlistStatus()
         }
         .onChange(of: cloudkitViewModel.userPayments) { _ in
-            // Force UI update when payments change
             viewModel.updateWishlistStatus()
         }
         .alert(viewModel.paymentSuccess ? "Payment Successful!" : "Payment Info", isPresented: $viewModel.showingPaymentAlert) {
             Button("OK") { 
-                // Refresh payments after successful payment
                 if viewModel.paymentSuccess {
                     cloudkitViewModel.fetchUserPayments(forceRefresh: true)
                 }
             }
         } message: {
             Text(viewModel.paymentMessage)
+        }
+    }
+    
+    // Add this payment processing function
+    private func processPaymentWithDates(startDate: Date?, endDate: Date?) {
+        viewModel.isProcessingPayment = true
+        
+        cloudkitViewModel.processContactOwnerPayment(
+            property: property,
+            bookingStartDate: startDate,
+            bookingEndDate: endDate
+        ) { result in
+            DispatchQueue.main.async {
+                viewModel.isProcessingPayment = false
+                
+                switch result {
+                case .success(_):
+                    viewModel.paymentSuccess = true
+                    viewModel.paymentMessage = "Payment successful! You can now contact the property owner."
+                    
+                case .failure(let error):
+                    viewModel.paymentSuccess = false
+                    viewModel.paymentMessage = "Payment failed: \(error.localizedDescription)"
+                }
+                
+                viewModel.showingPaymentAlert = true
+            }
         }
     }
 }
@@ -320,6 +369,11 @@ struct PropertyBottomActionBar: View {
     let viewModel: PropertyDetailViewModel
     @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
     
+    // Add date picker bindings
+    @Binding var showingDatePicker: Bool
+    @Binding var selectedStartDate: Date?
+    @Binding var selectedEndDate: Date?
+    
     var body: some View {
         VStack {
             Divider()
@@ -339,7 +393,7 @@ struct PropertyBottomActionBar: View {
                 
                 if property.status == .active {
                     Button(action: {
-                        viewModel.handleButtonAction()
+                        handleButtonAction()
                     }) {
                         HStack {
                             if viewModel.isProcessingPayment {
@@ -384,6 +438,19 @@ struct PropertyBottomActionBar: View {
             .padding(.vertical, 10)
             .background(Theme.background)
             .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: -5)
+        }
+    }
+    
+    private func handleButtonAction() {
+        if cloudkitViewModel.isPropertyOwnedByCurrentUser(property) {
+            // Do nothing for owned property
+            return
+        } else if cloudkitViewModel.hasUserPaidForContact(property: property) {
+            // Contact owner directly
+            viewModel.handleButtonAction()
+        } else {
+            // Show date picker first
+            showingDatePicker = true
         }
     }
 }
