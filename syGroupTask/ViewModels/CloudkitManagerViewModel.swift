@@ -777,6 +777,26 @@ class CloudkitManagerViewModel: ObservableObject {
         publicDB.add(operation)
     }
     
+    func fetchAllPayments() {
+        let predicate = NSPredicate(value: true)
+        let query = CKQuery(recordType: "Payment", predicate: predicate)
+        
+        publicDB.perform(query, inZoneWith: nil) { [weak self] records, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Error fetching all payments: \(error)")
+                    return
+                }
+                
+                guard let records = records else { return }
+                
+                self?.allPayments = records.compactMap { record in
+                    Payment.fromCKRecord(record)
+                }
+            }
+        }
+    }
+    
     func getAllPayments() -> [Payment] {
         return allPayments
     }
