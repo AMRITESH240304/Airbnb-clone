@@ -37,18 +37,18 @@ struct ContentView: View {
                 .tabItem{
                     Image("Airbnb")
                         .renderingMode(.template)
-                    Text("Trips")
+                    Text("Properties")
                 }
                 .tag(2)
                 
-                NavigationStack{
-                    MessagesView()
-                }
-                .tabItem{
-                    Image(systemName: "bubble.left")
-                    Text("Messages")
-                }
-                .tag(3)
+//                NavigationStack{
+//                    MessagesView()
+//                }
+//                .tabItem{
+//                    Image(systemName: "bubble.left")
+//                    Text("Messages")
+//                }
+//                .tag(3)
                 
                 NavigationStack{
                     ProfileViews()

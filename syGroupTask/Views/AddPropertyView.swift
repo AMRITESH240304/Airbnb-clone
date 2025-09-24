@@ -163,7 +163,7 @@ struct AddPropertyView: View {
                         // Price (for sale) or Monthly Rent (for rent)
                         if viewModel.listingType == "For Sale" {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Asking Price ($)")
+                                Text("Asking Price (₹)")
                                     .font(.subheadline)
                                     .foregroundColor(Theme.textSecondary)
                                 
@@ -175,7 +175,7 @@ struct AddPropertyView: View {
                             }
                         } else {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Monthly Rent ($)")
+                                Text("Monthly Rent (₹)")
                                     .font(.subheadline)
                                     .foregroundColor(Theme.textSecondary)
                                 

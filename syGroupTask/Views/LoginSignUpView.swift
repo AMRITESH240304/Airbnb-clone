@@ -131,38 +131,23 @@ struct LoginSignUpView: View {
                     onCompletion: { result in
                         switch result {
                         case .success(let auth):
-                            switch auth.credential {
-                            case let credential
-                                as ASAuthorizationAppleIDCredential:
+                            if let credential = auth.credential as? ASAuthorizationAppleIDCredential {
                                 let userId = credential.user
                                 let email = credential.email
                                 let firstName = credential.fullName?.givenName
                                 let lastName = credential.fullName?.familyName
-                                
+
                                 let user = User(id: userId, email: email, firstName: firstName, lastName: lastName)
                                 authManager.saveUser(user)
-                                
-
-                                print("userId: \(userId)")
-                                print("email: \(String(describing: email))")
-                                print(
-                                    "firstName: \(String(describing: firstName))"
-                                )
-                                print(
-                                    "lastName: \(String(describing: lastName))"
-                                )
 
                                 dismiss()
-                            default:
-                                break
                             }
                         case .failure(let error):
-                            print(
-                                "Authentication error: \(error.localizedDescription)"
-                            )
+                            print("Authentication error: \(error.localizedDescription)")
                         }
                     }
                 )
+                .signInWithAppleButtonStyle(.whiteOutline)
                 .frame(height: 50)
                 .padding(.horizontal)
                 .cornerRadius(10)

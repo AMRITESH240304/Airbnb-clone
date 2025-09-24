@@ -107,7 +107,7 @@ struct PropertyCardView: View {
                     .lineLimit(1)
                 
                 HStack {
-                    Text("$\(Int(property.price))")
+                    Text("₹\(Int(property.price))")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(Theme.textPrimary)
                     
