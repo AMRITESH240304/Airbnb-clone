@@ -1,100 +1,14 @@
+//
+//  CollaborationContactSheet.swift
+//  syGroupTask
+//
+//  Created by Amritesh Kumar on 26/09/25.
+//
+
 import SwiftUI
 
-struct ProfessionalCategorySectionView: View {
-    let categoryName: String
-    let professionals: [Professional]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text(categoryName)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(Theme.textPrimary)
-                
-                Spacer()
-                
-                NavigationLink(destination: ProfessionalCategoryDetailView(categoryName: categoryName, professionals: professionals)) {
-                    Text("See all")
-                        .font(.subheadline)
-                        .foregroundColor(Theme.primaryColor)
-                        .fontWeight(.medium)
-                }
-            }
-            .padding(.horizontal)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
-                    ForEach(professionals.prefix(5)) { professional in
-                        NavigationLink(destination: ProfessionalDetailView(professional: professional)) {
-                            ProfessionalCard(professional: professional)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-                .padding(.horizontal)
-            }
-        }
-    }
-}
-
-struct ProfessionalCategoryDetailView: View {
-    let categoryName: String
-    let professionals: [Professional]
-    
-    var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 16) {
-                ForEach(professionals) { professional in
-                    NavigationLink(destination: ProfessionalDetailView(professional: professional)) {
-                        ProfessionalListCard(professional: professional)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-            }
-            .padding()
-        }
-        .navigationTitle(categoryName)
-        .navigationBarTitleDisplayMode(.large)
-    }
-}
-
-
-
-struct ServiceRow: View {
-    let service: ProfessionalService
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(service.name)
-                    .font(.headline)
-                
-                Text(service.description)
-                    .font(.subheadline)
-                    .foregroundColor(Theme.textSecondary)
-                    .lineLimit(2)
-                
-                Text(service.duration)
-                    .font(.caption)
-                    .foregroundColor(Theme.textSecondary)
-            }
-            
-            Spacer()
-            
-            Text("₹\(Int(service.price))")
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.primaryColor)
-        }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-    }
-}
-
-struct ProfessionalContactSheet: View {
-    let professional: Professional
+struct CollaborationContactSheet: View {
+    let collaboration: Collaboration
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
     @State private var isProcessingPayment = false
@@ -110,27 +24,27 @@ struct ProfessionalContactSheet: View {
                     .fontWeight(.bold)
                     .padding(.top)
                 
-                if isOwnProfessionalProfile() {
+                if isOwnCollaboration() {
                     VStack(spacing: 16) {
-                        Image(systemName: "person.circle.fill")
+                        Image(systemName: "building.2.fill")
                             .font(.system(size: 50))
                             .foregroundColor(Theme.primaryColor)
                         
-                        Text("This is Your Profile")
+                        Text("This is Your Collaboration")
                             .font(.title3)
                             .fontWeight(.bold)
                             .foregroundColor(Theme.textPrimary)
                         
-                        Text("You cannot view contact details for your own professional profile")
+                        Text("You cannot view contact details for your own collaboration")
                             .font(.subheadline)
                             .foregroundColor(Theme.textSecondary)
                             .multilineTextAlignment(.center)
                         
                         VStack(alignment: .leading, spacing: 16) {
-                            ContactInfoRow(icon: "phone.fill", title: "Phone", value: professional.phoneNumber)
-                            ContactInfoRow(icon: "envelope.fill", title: "Email", value: professional.email)
+                            ContactInfoRow(icon: "phone.fill", title: "Phone", value: collaboration.contactPhone)
+                            ContactInfoRow(icon: "envelope.fill", title: "Email", value: collaboration.contactEmail)
                             
-                            if let website = professional.website {
+                            if let website = collaboration.website {
                                 ContactInfoRow(icon: "globe", title: "Website", value: website)
                             }
                         }
@@ -138,12 +52,12 @@ struct ProfessionalContactSheet: View {
                         .background(Color(.systemGray6))
                         .cornerRadius(16)
                     }
-                } else if cloudkitViewModel.hasUserPaidForProfessionalContact(professional: professional) {
+                } else if cloudkitViewModel.hasUserPaidForCollaborationContact(collaboration: collaboration) {
                     VStack(alignment: .leading, spacing: 16) {
-                        ContactInfoRow(icon: "phone.fill", title: "Phone", value: professional.phoneNumber)
-                        ContactInfoRow(icon: "envelope.fill", title: "Email", value: professional.email)
+                        ContactInfoRow(icon: "phone.fill", title: "Phone", value: collaboration.contactPhone)
+                        ContactInfoRow(icon: "envelope.fill", title: "Email", value: collaboration.contactEmail)
                         
-                        if let website = professional.website {
+                        if let website = collaboration.website {
                             ContactInfoRow(icon: "globe", title: "Website", value: website)
                         }
                     }
@@ -162,7 +76,7 @@ struct ProfessionalContactSheet: View {
                                 .fontWeight(.bold)
                                 .foregroundColor(Theme.textPrimary)
                             
-                            Text("Pay ₹\(Int(RevenueConfig.contactOwnerFee)) to unlock contact details for this professional")
+                            Text("Pay ₹\(Int(RevenueConfig.contactOwnerFee)) to unlock contact details for this collaboration")
                                 .font(.subheadline)
                                 .foregroundColor(Theme.textSecondary)
                                 .multilineTextAlignment(.center)
@@ -172,7 +86,7 @@ struct ProfessionalContactSheet: View {
                         .cornerRadius(16)
                         
                         Button(action: {
-                            processProfessionalContactPayment()
+                            processCollaborationContactPayment()
                         }) {
                             HStack {
                                 if isProcessingPayment {
@@ -224,14 +138,14 @@ struct ProfessionalContactSheet: View {
         }
     }
     
-    private func isOwnProfessionalProfile() -> Bool {
-        return cloudkitViewModel.cachedUserID == professional.userID
+    private func isOwnCollaboration() -> Bool {
+        return cloudkitViewModel.cachedUserID == collaboration.userID
     }
     
-    private func processProfessionalContactPayment() {
+    private func processCollaborationContactPayment() {
         isProcessingPayment = true
         
-        cloudkitViewModel.processProfessionalContactPayment(professional: professional) { [self] result in
+        cloudkitViewModel.processCollaborationContactPayment(collaboration: collaboration) { [self] result in
             DispatchQueue.main.async {
                 self.isProcessingPayment = false
                 
@@ -251,28 +165,3 @@ struct ProfessionalContactSheet: View {
     }
 }
 
-struct ContactInfoRow: View {
-    let icon: String
-    let title: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundColor(Theme.primaryColor)
-                .frame(width: 24)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(Theme.textSecondary)
-                
-                Text(value)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-            }
-            
-            Spacer()
-        }
-    }
-}

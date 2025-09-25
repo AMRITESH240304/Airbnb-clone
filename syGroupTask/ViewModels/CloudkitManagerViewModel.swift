@@ -483,7 +483,7 @@ class CloudkitManagerViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Wishlist Methods (unchanged)
+    // MARK: - Wishlist Methods
 
     func addToWishlist(
         property: PropertyListing,

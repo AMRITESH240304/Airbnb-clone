@@ -19,7 +19,6 @@ struct CollaborationRegistrationView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Payment Info Section
                     VStack(spacing: 16) {
                         Image(systemName: "building.2")
                             .font(.system(size: 50))
@@ -222,7 +221,6 @@ struct CollaborationRegistrationView: View {
         cloudkitViewModel.processCollaborationRegistrationPayment { [self] paymentResult in
             switch paymentResult {
             case .success(_):
-                // Payment successful, now create collaboration profile
                 cloudkitViewModel.createCollaborationProfile(from: formData) { [self] profileResult in
                     DispatchQueue.main.async {
                         self.isProcessingPayment = false

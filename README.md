@@ -2,7 +2,9 @@
 
 **Conversion of Airbnb clone to a realEstate app with feature enhancement using cloudkit for data and the challenge to keep the UI same.**
 
-**Explanation Video:** `https://drive.google.com/file/d/1Ccvmp7BY9Tykb4r2xhpkkbErMRHypsV_/view?usp=sharing`
+<img src="appSs/PropertyListingPage.png" alt="Property Listing" width="300"/>
+
+*Main property listing interface showing available real estate properties*
 
 ## 🏗️ Architecture Overview
 
@@ -17,11 +19,11 @@ The application follows the **Model-View-ViewModel (MVVM)** architecture pattern
 └─────────────┘    └─────────────┘    └─────────────┘
 ```
 
-#### **Auth/security**
+### **Auth/security**
 
 The application implemenets a secure authentication system using ****Keychain Services**** for credential sotre ****CloudKit**** for user Management
 
-##### **Authentication Architecture**
+#### **Authentication Architecture**
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │  AuthManager    │───▶│  Keychain       │    │   CloudKit      │
@@ -47,10 +49,12 @@ class AuthManagerViewModel: ObservableObject {
 }
 ```
 
-
 ##### **Apple ID Authentication Flow**
 
-![Authentication Flow](images/SignUp.png)
+<img src="appSs/SignUpPage.png" alt="Sign Up Page" width="300"/>
+
+*User registration and authentication interface*
+
 1. **App Launch**: `loadUserFromKeychain()` checks for existing credentials
 2. **No Credentials**: Automatically enters guest mode for browsing
 3. **Login Success**: `saveUser()` stores encrypted credentials in Keychain
@@ -78,6 +82,10 @@ class AuthManagerViewModel: ObservableObject {
 ## 🔍 Search System Architecture
 
 ### Advanced Property Search Implementation
+
+<img src="appSs/SearchPage.png" alt="Search Page" width="300"/>
+
+*Advanced search interface with filtering capabilities*
 
 The search system provides comprehensive property discovery through multiple search mechanisms:
 
@@ -128,6 +136,118 @@ Results are intelligently sorted by relevance:
 2. **Location Matches**: Location-based matches ranked second
 3. **Category Matches**: Category matches follow
 4. **Date Relevance**: Among equal matches, newest listings appear first
+
+## 👤 User Profile & Management
+
+### Profile Management System
+
+<img src="appSs/ProfilePage.png" alt="Profile Page" width="300"/>
+
+*User profile interface showing account information and preferences*
+
+The user profile system provides comprehensive account management:
+
+#### Profile Features:
+- **Personal Information**: Name, contact details, profile picture
+- **Property Management**: Host can manage their listings
+- **Booking History**: Complete transaction history
+- **Wishlist Access**: Quick access to saved properties
+- **Professional Upgrade**: Option to convert to professional membership
+- **Account Settings**: Privacy, notifications, and security settings
+
+### Logout Flow
+
+The application provides secure logout functionality across different sections:
+
+#### Logout Screenshots
+<img src="appSs/logoutInbox.png" alt="Logout Inbox" width="250"/>
+<img src="appSs/logoutProfile.png" alt="Logout Profile" width="250"/>
+<img src="appSs/logoutProperties.png" alt="Logout Properties" width="250"/>
+<img src="appSs/logoutWishlist.png" alt="Logout Wishlist" width="250"/>
+
+*Secure logout functionality across different app sections*
+
+## 💰 Professional Services & Revenue
+
+### Professional Membership
+
+<img src="appSs/professionalSection.png" alt="Professional Section" width="300"/>
+
+*Professional membership interface and services overview*
+
+<img src="appSs/RealEstateSection.png" alt="Real Estate Section" width="300"/>
+
+*Real estate professional services and tools*
+
+<img src="appSs/servicesSection.png" alt="Services Section" width="300"/>
+
+*Comprehensive services offered by professional members*
+
+### Revenue Analytics
+
+<img src="appSs/IncomeAnalytics.png" alt="Income Analytics" width="300"/>
+
+*Detailed revenue analytics and performance metrics*
+
+Professional members get access to:
+- **Advanced Analytics**: Detailed income tracking and performance metrics
+- **Enhanced Listings**: Premium property listing features
+- **Professional Services**: Offer specialized real estate services
+- **Priority Support**: Dedicated customer support
+- **Marketing Tools**: Advanced promotion and marketing capabilities
+
+## 💝 Wishlist & Favorites
+
+<img src="appSs/WishlistsPage.png" alt="Wishlists Page" width="300"/>
+
+*User wishlist showing saved properties and favorites*
+
+The wishlist system allows users to:
+- **Save Properties**: Add interesting properties for later viewing
+- **Organize Collections**: Create multiple wishlists for different purposes
+- **Quick Access**: Fast navigation to saved properties
+- **Share Lists**: Share wishlist collections with others
+- **Sync Across Devices**: CloudKit-powered synchronization
+
+## 🏠 Property Management
+
+<img src="appSs/MyPropertyPage.png" alt="My Property Page" width="300"/>
+
+*Property owner interface for managing listings*
+
+Property owners can:
+- **List Properties**: Add new properties with detailed information
+- **Manage Listings**: Edit, update, or remove existing properties
+- **Track Performance**: Monitor property views and interest
+- **Handle Bookings**: Manage reservation requests
+- **Update Availability**: Real-time availability calendar management
+
+## 💳 Transaction Management
+
+<img src="appSs/TransactionHistory.png" alt="Transaction History" width="300"/>
+
+*Comprehensive transaction history and payment tracking*
+
+The transaction system provides:
+- **Payment History**: Complete record of all transactions
+- **Booking Payments**: Track property booking payments
+- **Service Payments**: Professional service transaction history
+- **Membership Payments**: Professional membership payment tracking
+- **Refund Management**: Handle refunds and cancellations
+- **Financial Reports**: Generate detailed financial reports
+
+## 📨 Communication System
+
+<img src="appSs/MessageBox.png" alt="Message Box" width="300"/>
+
+*In-app messaging system for user communication*
+
+The messaging system enables:
+- **Direct Messaging**: Host-guest communication
+- **Booking Inquiries**: Property-specific conversations
+- **Service Discussions**: Professional service communications
+- **System Notifications**: Automated booking and payment updates
+- **Message History**: Persistent conversation records
 
 ## 📊 CloudKit Database Architecture
 
@@ -358,11 +478,6 @@ SwiftUI View
 - **Professional service updates**: Notifications when new services are available
 - **Payment confirmations**: Instant payment status updates
 
-### Conflict Resolution
-- CloudKit handles automatic conflict resolution
-- Last-writer-wins strategy for simple fields
-- Custom merge logic for complex data structures
-
 ## 🚀 Features
 
 ### Core Functionality
@@ -380,7 +495,6 @@ SwiftUI View
 ## 📱 Setup Instructions
 
 1. **Enable CloudKit capability** in Xcode project settings
-2. **Configure CloudKit schema** in CloudKit Dashboard
 3. **Configure iCloud account** on testing device
 4. **Build and run** the application
 
@@ -404,4 +518,4 @@ SwiftUI View
             └──────────────────────────┘
 ```
 
-This architecture ensures efficient data management, real-time synchronization, and a responsive user interface following modern iOS development best practices.
+This architecture ensures efficient data management, real-time synchronization, and a responsive user interface.
