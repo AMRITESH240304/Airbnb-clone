@@ -5,15 +5,13 @@ struct TransactionHistoryView: View {
     @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var selectedFilter: TransactionFilter = .all
-    @State private var chartAnimationProgress: CGFloat = 0.0 // State for chart animation
+    @State private var chartAnimationProgress: CGFloat = 0.0
     
     var body: some View {
         NavigationView {
             VStack {
-                // Payment Trend Chart
                 paymentTrendChart
                 
-                // Filter Picker
                 Picker("Filter", selection: $selectedFilter) {
                     ForEach(TransactionFilter.allCases) { filter in
                         Text(filter.rawValue).tag(filter)
@@ -22,7 +20,6 @@ struct TransactionHistoryView: View {
                 .pickerStyle(SegmentedPickerStyle())
                 .padding(.horizontal)
                 
-                // Transaction List
                 List {
                     ForEach(filteredPayments) { payment in
                         TransactionRow(payment: payment)
@@ -43,7 +40,7 @@ struct TransactionHistoryView: View {
         .onAppear {
             cloudkitViewModel.fetchAllPayments()
             withAnimation(.easeOut(duration: 1.0)) {
-                chartAnimationProgress = 1.0 // Trigger chart animation
+                chartAnimationProgress = 1.0 
             }
         }
     }

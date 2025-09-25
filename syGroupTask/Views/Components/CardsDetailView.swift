@@ -110,7 +110,6 @@ struct CardsDetailView: View {
 
                     Divider()
 
-                    // Host Info
                     HStack {
                         AsyncImage(url: URL(string: propertyDetail.host.profileImage)) { image in
                             image
@@ -152,7 +151,6 @@ struct CardsDetailView: View {
 
                     Divider()
 
-                    // Amenities Section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("What this place offers")
                             .font(.title3)
@@ -226,14 +224,12 @@ struct CardsDetailView: View {
                     }
                     .padding(.horizontal)
 
-                    // Add extra padding at the bottom to ensure content doesn't get hidden behind the action bar
                     Spacer()
                         .frame(height: 100)
                 }
                 .padding(.vertical, 8)
             }
 
-            // Bottom action bar (floating above tab bar)
             VStack {
                 Divider()
                 HStack {
@@ -274,8 +270,6 @@ struct CardsDetailView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden()
-        // Remove the ignoresSafeArea modifier to respect the tab bar
-        // Add safeAreaInset instead to ensure proper spacing
         .safeAreaInset(edge: .bottom) {
             Color.clear.frame(height: 0)
         }

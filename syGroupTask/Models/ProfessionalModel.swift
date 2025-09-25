@@ -16,9 +16,9 @@ struct Professional: Identifiable, Equatable {
     
     var services: [ProfessionalService]
     var categories: [ServiceCategory]
-    var experience: Int // years
+    var experience: Int
     var profileImageURL: String?
-    var portfolioImages: [String] // This can be empty now
+    var portfolioImages: [String]
     
     var rating: Double
     var reviewCount: Int
@@ -47,29 +47,24 @@ struct Professional: Identifiable, Equatable {
         record["email"] = email
         record["location"] = location
         
-        // Only set website if it's not empty
         if let website = website, !website.isEmpty {
             record["website"] = website
         }
         
-        // Only set services if not empty
         if !services.isEmpty {
             if let servicesData = try? JSONEncoder().encode(services) {
                 record["servicesData"] = servicesData
             }
         }
         
-        // Categories should always have at least one
         record["categoriesData"] = categories.map { $0.rawValue }
         
         record["experience"] = experience
         
-        // Only set profile image if not empty
         if let profileImageURL = profileImageURL, !profileImageURL.isEmpty {
             record["profileImageURL"] = profileImageURL
         }
         
-        // Only set portfolio images if not empty
         if !portfolioImages.isEmpty {
             record["portfolioImages"] = portfolioImages
         }
@@ -159,7 +154,7 @@ struct ProfessionalService: Identifiable, Codable, Equatable {
     var name: String
     var description: String
     var price: Double
-    var duration: String // e.g., "1 hour", "1 day"
+    var duration: String 
     var category: ServiceCategory
     
     init(id: UUID = UUID(), name: String, description: String, price: Double, duration: String, category: ServiceCategory) {

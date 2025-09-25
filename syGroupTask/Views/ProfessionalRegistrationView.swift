@@ -9,10 +9,8 @@ struct ProfessionalRegistrationView: View {
     var body: some View {
         NavigationView {
             VStack {
-                // Progress Indicator
                 ProgressIndicatorView(currentStep: currentStep)
                 
-                // Content
                 ScrollView {
                     VStack(spacing: 24) {
                         switch currentStep {
@@ -29,7 +27,6 @@ struct ProfessionalRegistrationView: View {
                     .padding()
                 }
                 
-                // Navigation Buttons
                 HStack {
                     if currentStep != .basicInfo {
                         Button("Back") {
@@ -101,7 +98,6 @@ enum RegistrationStep: CaseIterable {
     }
 }
 
-// Progress Indicator
 struct ProgressIndicatorView: View {
     let currentStep: RegistrationStep
     
@@ -127,7 +123,6 @@ struct ProgressIndicatorView: View {
     }
 }
 
-// Basic Info Step
 struct BasicInfoStepView: View {
     @Binding var formData: ProfessionalRegistrationFormData
     
@@ -154,7 +149,6 @@ struct BasicInfoStepView: View {
     }
 }
 
-// Services Step
 struct ServicesStepView: View {
     @Binding var formData: ProfessionalRegistrationFormData
     @State private var showingAddService = false
@@ -164,8 +158,7 @@ struct ServicesStepView: View {
             Text("Services & Categories")
                 .font(.title2)
                 .fontWeight(.bold)
-            
-            // Categories Selection
+        
             Text("Select Service Categories")
                 .font(.headline)
             
@@ -188,7 +181,6 @@ struct ServicesStepView: View {
                 }
             }
             
-            // Services List
             HStack {
                 Text("Your Services (Optional)")
                     .font(.headline)
@@ -240,7 +232,6 @@ struct ServicesStepView: View {
     }
 }
 
-// Portfolio Step
 struct PortfolioStepView: View {
     @Binding var formData: ProfessionalRegistrationFormData
     
@@ -253,10 +244,7 @@ struct PortfolioStepView: View {
             Text("Add photos of your work to showcase your skills. You can skip this step and add portfolio images later from your profile.")
                 .foregroundColor(Theme.textSecondary)
             
-            // Portfolio Images (simplified for now)
             Button(action: {
-                // Add image selection logic
-                // For now, we'll just show that it's optional
             }) {
                 VStack(spacing: 12) {
                     Image(systemName: "photo.badge.plus")
@@ -289,7 +277,6 @@ struct PortfolioStepView: View {
     }
 }
 
-// Payment Step
 struct PaymentStepView: View {
     @Binding var formData: ProfessionalRegistrationFormData
     let viewModel: ProfessionalRegistrationViewModel
@@ -325,7 +312,6 @@ struct PaymentStepView: View {
     }
 }
 
-// Supporting Views
 struct CategorySelectionCard: View {
     let category: ServiceCategory
     let isSelected: Bool
@@ -431,7 +417,6 @@ struct PricingCard: View {
     }
 }
 
-// Button Styles
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

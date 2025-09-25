@@ -43,7 +43,6 @@ struct ProfessionalCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Profile Image
             AsyncImage(url: URL(string: professional.profileImageURL ?? "")) { image in
                 image
                     .resizable()
@@ -61,10 +60,9 @@ struct ProfessionalCard: View {
             .frame(width: 60, height: 60)
             .clipShape(Circle())
             .overlay(
-                // Always show the blue tick
                 Image(systemName: "checkmark.seal.fill")
                     .foregroundColor(.blue)
-                    .offset(x: 20, y: 20) // Position the tick mark
+                    .offset(x: 20, y: 20)
             )
             
             VStack(alignment: .leading, spacing: 4) {
@@ -136,7 +134,6 @@ struct ProfessionalListCard: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Profile Image
             AsyncImage(url: URL(string: professional.profileImageURL ?? "")) { image in
                 image
                     .resizable()
@@ -163,7 +160,6 @@ struct ProfessionalListCard: View {
                     
                     Spacer()
                     
-                    // Always show the blue tick
                     Image(systemName: "checkmark.seal.fill")
                         .foregroundColor(.blue)
                 }
@@ -232,7 +228,6 @@ struct ProfessionalDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Profile Header
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         AsyncImage(url: URL(string: professional.profileImageURL ?? "")) { image in
@@ -294,7 +289,6 @@ struct ProfessionalDetailView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(16)
                 
-                // Services
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Services")
                         .font(.title3)
@@ -308,7 +302,6 @@ struct ProfessionalDetailView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(16)
                 
-                // Contact Button
                 Button(action: {
                     showingContactSheet = true
                 }) {
@@ -403,7 +396,6 @@ struct ProfessionalContactSheet: View {
                     .fontWeight(.bold)
                     .padding(.top)
                 
-                // Check if this is user's own professional profile
                 if isOwnProfessionalProfile() {
                     VStack(spacing: 16) {
                         Image(systemName: "person.circle.fill")
@@ -420,7 +412,6 @@ struct ProfessionalContactSheet: View {
                             .foregroundColor(Theme.textSecondary)
                             .multilineTextAlignment(.center)
                         
-                        // Show contact information directly since it's their own profile
                         VStack(alignment: .leading, spacing: 16) {
                             ContactInfoRow(icon: "phone.fill", title: "Phone", value: professional.phoneNumber)
                             ContactInfoRow(icon: "envelope.fill", title: "Email", value: professional.email)
@@ -434,7 +425,6 @@ struct ProfessionalContactSheet: View {
                         .cornerRadius(16)
                     }
                 } else if cloudkitViewModel.hasUserPaidForProfessionalContact(professional: professional) {
-                    // Show contact information for paid users
                     VStack(alignment: .leading, spacing: 16) {
                         ContactInfoRow(icon: "phone.fill", title: "Phone", value: professional.phoneNumber)
                         ContactInfoRow(icon: "envelope.fill", title: "Email", value: professional.email)
@@ -447,7 +437,6 @@ struct ProfessionalContactSheet: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(16)
                 } else {
-                    // Show payment required section for other users
                     VStack(spacing: 16) {
                         VStack(spacing: 12) {
                             Image(systemName: "lock.fill")

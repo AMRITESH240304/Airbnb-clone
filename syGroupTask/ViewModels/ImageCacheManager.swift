@@ -17,20 +17,16 @@ class ImageCacheManager: ObservableObject {
     private let cacheDirectory: URL
     
     private init() {
-        // Configure NSCache
-        cache.countLimit = 100 // Maximum 100 images in memory
-        cache.totalCostLimit = 50 * 1024 * 1024 // 50MB memory limit
+        cache.countLimit = 100
+        cache.totalCostLimit = 50 * 1024 * 1024
         
-        // Create cache directory
         let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
         cacheDirectory = documentsPath.appendingPathComponent("ImageCache")
         
-        // Create directory if it doesn't exist
         if !fileManager.fileExists(atPath: cacheDirectory.path) {
             try? fileManager.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)
         }
         
-        // Clean up old cache on init
         cleanupOldCache()
     }
     
@@ -39,19 +35,15 @@ class ImageCacheManager: ObservableObject {
     func getImage(from urlString: String) async -> UIImage? {
         let cacheKey = NSString(string: urlString)
         
-        // Check memory cache first
         if let cachedImage = cache.object(forKey: cacheKey) {
             return cachedImage
         }
         
-        // Check disk cache
         if let diskImage = loadImageFromDisk(urlString: urlString) {
-            // Store in memory cache for faster access
             cache.setObject(diskImage, forKey: cacheKey)
             return diskImage
         }
         
-        // Download from network
         return await downloadAndCacheImage(from: urlString)
     }
     
@@ -80,10 +72,8 @@ class ImageCacheManager: ObservableObject {
             
             let cacheKey = NSString(string: urlString)
             
-            // Store in memory cache
             cache.setObject(image, forKey: cacheKey)
             
-            // Store in disk cache
             saveImageToDisk(image: image, urlString: urlString)
             
             return image
@@ -186,7 +176,6 @@ class CachedImageLoader: ObservableObject {
     private var currentURL: String?
     
     func loadImage(from urlString: String) {
-        // Avoid duplicate loads
         guard currentURL != urlString else { return }
         
         currentURL = urlString
@@ -195,7 +184,6 @@ class CachedImageLoader: ObservableObject {
         Task {
             let loadedImage = await ImageCacheManager.shared.getImage(from: urlString)
             
-            // Only update if this is still the current URL
             if currentURL == urlString {
                 self.image = loadedImage
                 self.isLoading = false

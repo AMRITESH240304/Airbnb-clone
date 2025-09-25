@@ -60,7 +60,6 @@ struct Collaboration: Identifiable, Equatable {
         record["website"] = website
         record["logoImageURL"] = logoImageURL
         
-        // Fix: Only save businessImages if it's not empty
         if !businessImages.isEmpty {
             record["businessImages"] = businessImages
         }
@@ -70,7 +69,6 @@ struct Collaboration: Identifiable, Equatable {
         record["businessModel"] = businessModel
         record["experienceRequired"] = experienceRequired
         
-        // Fix: Only save supportProvided if it's not empty
         if !supportProvided.isEmpty {
             record["supportProvided"] = supportProvided
         }
@@ -130,12 +128,12 @@ struct Collaboration: Identifiable, Equatable {
             contactPhone: contactPhone,
             website: record["website"] as? String,
             logoImageURL: record["logoImageURL"] as? String,
-            businessImages: record["businessImages"] as? [String] ?? [], // Default to empty array if nil
+            businessImages: record["businessImages"] as? [String] ?? [],
             investmentRange: investmentRange,
             expectedROI: expectedROI,
             businessModel: businessModel,
             experienceRequired: experienceRequired,
-            supportProvided: record["supportProvided"] as? [String] ?? [], // Default to empty array if nil
+            supportProvided: record["supportProvided"] as? [String] ?? [], 
             isVerified: isVerified,
             isPremium: isPremium,
             rating: rating,

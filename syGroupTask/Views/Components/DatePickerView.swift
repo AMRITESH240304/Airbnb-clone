@@ -7,7 +7,6 @@ struct DatePickerView: View {
     @Binding var flexibilityOption: DateAndGuestSection.FlexibilityOption
     @Binding var isPresented: Bool
     
-    // Add property and payment callback
     var property: PropertyListing?
     var onPaymentAction: ((Date?, Date?) -> Void)?
     
@@ -16,7 +15,6 @@ struct DatePickerView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
-                // When? Header
                 HStack {
                     Text("When?")
                         .font(.title2)
@@ -25,7 +23,6 @@ struct DatePickerView: View {
                 }
                 .padding(.horizontal)
                 
-                // Mode Selection (Dates, Months, Flexible)
                 HStack(spacing: 0) {
                     ForEach(DateAndGuestSection.DateSelectionMode.allCases, id: \.self) { mode in
                         Button(action: {
@@ -46,7 +43,6 @@ struct DatePickerView: View {
                 }
                 .padding(.horizontal)
                 
-                // Content based on selected mode
                 Group {
                     switch dateSelectionMode {
                     case .dates:
@@ -60,7 +56,6 @@ struct DatePickerView: View {
                 
                 Spacer()
                 
-                // Bottom Buttons
                 HStack {
                     Button("Reset") {
                         viewModel.resetAllSelections()
@@ -92,7 +87,6 @@ struct DatePickerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarHidden(true)
             .onAppear {
-                // Sync from parent bindings
                 viewModel.selectedStartDate = selectedStartDate
                 viewModel.selectedEndDate = selectedEndDate
             }
@@ -102,9 +96,7 @@ struct DatePickerView: View {
     // MARK: - Dates View
     private var datesView: some View {
         VStack {
-            // Calendar View
             VStack {
-                // Month Navigation
                 HStack {
                     Button(action: { viewModel.previousMonth() }) {
                         Image(systemName: "chevron.left")
@@ -126,7 +118,6 @@ struct DatePickerView: View {
                 }
                 .padding(.horizontal)
                 
-                // Weekday Headers
                 HStack {
                     ForEach(["S", "M", "T", "W", "T", "F", "S"], id: \.self) { day in
                         Text(day)
@@ -138,7 +129,6 @@ struct DatePickerView: View {
                 }
                 .padding(.horizontal)
                 
-                // Calendar Grid
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
                     ForEach(viewModel.calendarDays, id: \.self) { date in
                         if let date = date {
@@ -163,7 +153,6 @@ struct DatePickerView: View {
                 .padding(.horizontal)
             }
             
-            // Flexibility Options
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(DateAndGuestSection.FlexibilityOption.allCases, id: \.self) { option in
@@ -194,7 +183,6 @@ struct DatePickerView: View {
     // MARK: - Months View
     private var monthsView: some View {
         VStack(spacing: 24) {
-            // Month Duration Selector
             VStack(alignment: .leading, spacing: 16) {
                 Text("Month(s)")
                     .font(.system(size: 18, weight: .medium))
@@ -230,7 +218,6 @@ struct DatePickerView: View {
             
             Divider()
             
-            // Starting date
             VStack(spacing: 16) {
                 HStack {
                     Text("Starting date")
@@ -238,7 +225,6 @@ struct DatePickerView: View {
                         .foregroundColor(Theme.textPrimary)
                     Spacer()
                     Button(action: {
-                        // Could show another date picker
                     }) {
                         Text(viewModel.formatStartDate())
                             .font(.system(size: 16, weight: .medium))
@@ -255,7 +241,6 @@ struct DatePickerView: View {
                         .foregroundColor(Theme.textPrimary)
                     Spacer()
                     Button(action: {
-                        // Could show another date picker
                     }) {
                         Text(viewModel.formatEndDate())
                             .font(.system(size: 16, weight: .medium))
@@ -271,7 +256,6 @@ struct DatePickerView: View {
     // MARK: - Flexible View
     private var flexibleView: some View {
         VStack(spacing: 24) {
-            // Stay Duration
             VStack(alignment: .leading, spacing: 16) {
                 Text("How long would you like to stay?")
                     .font(.system(size: 18, weight: .medium))
@@ -304,7 +288,6 @@ struct DatePickerView: View {
             
             Divider()
             
-            // Go anytime section
             VStack(alignment: .leading, spacing: 16) {
                 Text("Go anytime")
                     .font(.system(size: 22, weight: .bold))

@@ -45,10 +45,8 @@ class AddPropertyViewModel: ObservableObject {
     
     let listingTypes = ["For Sale", "For Rent"]
     
-    // Gender options for student accommodation
     let genderOptions = ["Any", "Male Only", "Female Only"]
     
-    // Property categories - expanded with more options
     let mainCategories = [
         "House",
         "Apartment",

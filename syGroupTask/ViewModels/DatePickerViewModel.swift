@@ -135,7 +135,7 @@ class DatePickerViewModel: ObservableObject {
         var days: [Date?] = []
         var date = startOfCalendar
         
-        while days.count < 42 { // 6 weeks × 7 days
+        while days.count < 42 {
             if calendar.isDate(date, equalTo: currentMonth, toGranularity: .month) {
                 days.append(date)
             } else {
@@ -174,7 +174,6 @@ class DatePickerViewModel: ObservableObject {
         if let date = formatter.date(from: "\(month) 2025") {
             selectedStartDate = date
             
-            // Set end date based on stay duration
             switch stayDuration {
             case .weekend:
                 selectedEndDate = Calendar.current.date(byAdding: .day, value: 2, to: date)

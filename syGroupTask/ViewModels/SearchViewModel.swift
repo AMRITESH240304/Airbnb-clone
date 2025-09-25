@@ -34,7 +34,6 @@ class SearchViewModel: ObservableObject {
         isLoading = true
         isShowingResults = true
         
-        // Add to recent searches if not already present
         if !recentSearches.contains(query) {
             recentSearches.insert(query, at: 0)
             if recentSearches.count > 5 {
@@ -42,7 +41,6 @@ class SearchViewModel: ObservableObject {
             }
         }
         
-        // Simulate network delay for better UX
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             self.executeSearch(query: query, properties: cloudkitViewModel.allProperties)
             self.isLoading = false
@@ -61,7 +59,6 @@ class SearchViewModel: ObservableObject {
             property.listingType.rawValue.localizedCaseInsensitiveContains(query)
         }
         
-        // Sort results by relevance (title matches first, then location, etc.)
         searchResults.sort { property1, property2 in
             let title1Match = property1.title.localizedCaseInsensitiveContains(query)
             let title2Match = property2.title.localizedCaseInsensitiveContains(query)
@@ -81,7 +78,6 @@ class SearchViewModel: ObservableObject {
                 return false
             }
             
-            // If same relevance, sort by listing date (newest first)
             return property1.listingDate > property2.listingDate
         }
     }
@@ -93,8 +89,6 @@ class SearchViewModel: ObservableObject {
         searchText = "Nearby"
         isLoading = true
         
-        // For now, just show all active properties
-        // In a real app, you'd use location services to find nearby properties
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             self.searchResults = cloudkitViewModel.allProperties.filter { $0.status == .active }
             self.isLoading = false

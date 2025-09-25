@@ -13,10 +13,8 @@ struct PropertyListItemView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Property Image
             PropertyImageView(property: property)
             
-            // Property Details
             PropertyDetailsView(property: property)
         }
         .background(Color.white)
@@ -55,7 +53,6 @@ struct PropertyImageView: View {
                     )
             }
             
-            // Wishlist Heart Button
             Button {
                 toggleWishlist()
             } label: {
@@ -77,11 +74,9 @@ struct PropertyImageView: View {
     private func toggleWishlist() {
         if cloudkitViewModel.isPropertyInWishlist(property) {
             cloudkitViewModel.removeFromWishlist(property: property) { result in
-                // Handle result if needed
             }
         } else {
             cloudkitViewModel.addToWishlist(property: property) { result in
-                // Handle result if needed
             }
         }
     }
@@ -92,7 +87,6 @@ struct PropertyDetailsView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Property Title and Location
             VStack(alignment: .leading, spacing: 4) {
                 Text(property.title)
                     .font(.system(size: 16, weight: .semibold))
@@ -105,18 +99,15 @@ struct PropertyDetailsView: View {
                     .lineLimit(1)
             }
             
-            // Property Category and Type
             HStack {
                 PropertyBadge(text: property.category, color: .blue)
                 PropertyBadge(text: property.listingType.rawValue, color: property.listingType == .forSale ? .green : .orange)
                 
                 Spacer()
                 
-                // Property Status - Updated to use ListingStatus
                 ListingStatusBadge(status: property.status)
             }
             
-            // Price and Contact Count
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("₹\(formatPrice(property.price))")
@@ -132,7 +123,6 @@ struct PropertyDetailsView: View {
                 
                 Spacer()
                 
-                // Contact count and listing date
                 VStack(alignment: .trailing, spacing: 2) {
                     HStack(spacing: 4) {
                         Image(systemName: "eye.fill")
@@ -149,7 +139,6 @@ struct PropertyDetailsView: View {
                 }
             }
             
-            // Property Description Preview
             Text(property.description)
                 .font(.system(size: 14))
                 .foregroundColor(Theme.textSecondary)
@@ -160,11 +149,11 @@ struct PropertyDetailsView: View {
     }
     
     private func formatPrice(_ price: Double) -> String {
-        if price >= 10000000 { // 1 crore
+        if price >= 10000000 {
             return String(format: "%.1fCr", price / 10000000)
-        } else if price >= 100000 { // 1 lakh
+        } else if price >= 100000 {
             return String(format: "%.1fL", price / 100000)
-        } else if price >= 1000 { // 1 thousand
+        } else if price >= 1000 {
             return String(format: "%.1fK", price / 1000)
         } else {
             return String(format: "%.0f", price)
@@ -175,18 +164,15 @@ struct PropertyDetailsView: View {
         let calendar = Calendar.current
         let now = Date()
         
-        // Check if it's today
         if calendar.dateInterval(of: .day, for: now)?.contains(date) == true {
             return "Today"
         }
         
-        // Check if it's yesterday
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: now),
            calendar.dateInterval(of: .day, for: yesterday)?.contains(date) == true {
             return "Yesterday"
         }
         
-        // Calculate days ago
         let days = calendar.dateComponents([.day], from: date, to: now).day ?? 0
         if days < 7 {
             return "\(days) days ago"
@@ -216,7 +202,6 @@ struct PropertyBadge: View {
     }
 }
 
-// Updated to use ListingStatus instead of PropertyStatus
 struct ListingStatusBadge: View {
     let status: ListingStatus
     
@@ -243,8 +228,6 @@ struct ListingStatusBadge: View {
         }
     }
 }
-
-// Remove the PropertyStatus enum since we're using ListingStatus
 
 #Preview {
     PropertyListItemView(property: PropertyListing(

@@ -29,7 +29,6 @@ struct SearchView: View {
             }
             .onAppear {
                 viewModel.setCloudkitViewModel(cloudkitViewModel)
-                // Ensure properties are loaded
                 if cloudkitViewModel.allProperties.isEmpty {
                     cloudkitViewModel.fetchAllListings()
                 }
@@ -45,18 +44,14 @@ struct DefaultSearchView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                // Search Bar
                 SearchBarPlaceholder(viewModel: viewModel)
                 
-                // Recent Searches
                 if !viewModel.recentSearches.isEmpty {
                     RecentSearchesSection(viewModel: viewModel)
                 }
                 
-                // Suggested Categories
                 SuggestedCategoriesSection(viewModel: viewModel)
                 
-                // Quick Filters
                 QuickFiltersSection(viewModel: viewModel)
                 
                 Spacer()
@@ -311,7 +306,6 @@ struct SearchResultsHeader: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            // Search Field
             HStack {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(Theme.textSecondary)
@@ -333,7 +327,6 @@ struct SearchResultsHeader: View {
             .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
             .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
             
-            // Results count
             HStack {
                 Text(viewModel.resultCount)
                     .font(.system(size: 16, weight: .medium))

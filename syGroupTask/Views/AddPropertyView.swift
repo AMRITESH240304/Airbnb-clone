@@ -14,7 +14,6 @@ struct AddPropertyView: View {
     @Binding var wasListingAdded: Bool
     @State private var showLocationPicker = false
     
-    // For preview and default initialization without binding
     init(wasListingAdded: Binding<Bool> = .constant(false)) {
         self._wasListingAdded = wasListingAdded
     }
@@ -23,9 +22,7 @@ struct AddPropertyView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    // Property details form
                     VStack(alignment: .leading, spacing: 20) {
-                        // Title
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Property Title")
                                 .font(.subheadline)
@@ -37,7 +34,6 @@ struct AddPropertyView: View {
                                 .cornerRadius(8)
                         }
                         
-                        // Listing Type (Sale/Rent)
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Listing Type")
                                 .font(.subheadline)
@@ -51,7 +47,6 @@ struct AddPropertyView: View {
                             .pickerStyle(SegmentedPickerStyle())
                         }
                         
-                        // Main Category
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Property Type")
                                 .font(.subheadline)
@@ -72,7 +67,6 @@ struct AddPropertyView: View {
                             }
                         }
                         
-                        // Subcategory for Commercial Property
                         if viewModel.selectedCategory == "Commercial Property" {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Commercial Property Type")
@@ -93,7 +87,6 @@ struct AddPropertyView: View {
                             }
                         }
                         
-                        // Student Accommodation specific fields
                         if viewModel.isStudentAccommodation {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Gender Preference")
@@ -109,7 +102,6 @@ struct AddPropertyView: View {
                             }
                         }
                         
-                        // Overseas Property specific fields
                         if viewModel.isOverseas {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Country")
@@ -123,7 +115,6 @@ struct AddPropertyView: View {
                             }
                         }
                         
-                        // Location with map integration
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Location")
                                 .font(.subheadline)
@@ -160,7 +151,6 @@ struct AddPropertyView: View {
                             }
                         }
                         
-                        // Price (for sale) or Monthly Rent (for rent)
                         if viewModel.listingType == "For Sale" {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Asking Price (₹)")
@@ -187,7 +177,6 @@ struct AddPropertyView: View {
                             }
                         }
                         
-                        // Listing duration
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Listing Duration (days)")
                                 .font(.subheadline)

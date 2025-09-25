@@ -51,7 +51,6 @@ struct CardsView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 
-                // Top row: Label + Heart
                 HStack {
                     Text(label)
                         .font(.system(size: 10, weight: .medium))
@@ -68,7 +67,7 @@ struct CardsView: View {
                     }) {
                         Image(systemName: isLiked ? "heart.fill" : "heart")
                             .foregroundColor(isLiked ? Theme.primaryColor : Theme.textLight)
-                            .font(.system(size: 16)) // Smaller heart
+                            .font(.system(size: 16))
                     }
                 }
                 .padding(6)
@@ -84,7 +83,6 @@ struct CardsView: View {
                 .foregroundColor(Theme.textSecondary)
                 .lineLimit(1)
             
-            // Cost + Rating
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(cost)

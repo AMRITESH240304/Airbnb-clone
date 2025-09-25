@@ -35,7 +35,7 @@ struct CategorySectionView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(properties.prefix(10)) { property in // Limit to 10 items for performance
+                    ForEach(properties.prefix(10)) { property in
                         NavigationLink {
                             PropertyDetailView(property: property)
                                 .toolbar(.hidden, for: .tabBar)
@@ -58,7 +58,6 @@ struct PropertyCardView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Property Image with Heart Icon
             ZStack {
                 AsyncImage(url: URL(string: property.photoURLs.first ?? "")) { image in
                     image
@@ -75,7 +74,6 @@ struct PropertyCardView: View {
                 .frame(width: 240, height: 160)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 
-                // Wishlist Heart Icon
                 VStack {
                     HStack {
                         Spacer()

@@ -14,7 +14,6 @@ struct PropertyDetailView: View {
     @StateObject private var viewModel: PropertyDetailViewModel
     @Environment(\.dismiss) private var dismiss
     
-    // Add date picker state
     @State private var showingDatePicker = false
     @State private var selectedStartDate: Date?
     @State private var selectedEndDate: Date?
@@ -133,7 +132,6 @@ struct PropertyDetailView: View {
         }
     }
     
-    // Add this payment processing function
     private func processPaymentWithDates(startDate: Date?, endDate: Date?) {
         viewModel.isProcessingPayment = true
         
@@ -369,7 +367,6 @@ struct PropertyBottomActionBar: View {
     let viewModel: PropertyDetailViewModel
     @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
     
-    // Add date picker bindings
     @Binding var showingDatePicker: Bool
     @Binding var selectedStartDate: Date?
     @Binding var selectedEndDate: Date?
@@ -443,13 +440,10 @@ struct PropertyBottomActionBar: View {
     
     private func handleButtonAction() {
         if cloudkitViewModel.isPropertyOwnedByCurrentUser(property) {
-            // Do nothing for owned property
             return
         } else if cloudkitViewModel.hasUserPaidForContact(property: property) {
-            // Contact owner directly
             viewModel.handleButtonAction()
         } else {
-            // Show date picker first
             showingDatePicker = true
         }
     }

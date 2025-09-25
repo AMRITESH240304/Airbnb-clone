@@ -305,7 +305,6 @@ struct CollaborationDetailView: View {
                         Spacer()
                     }
                     
-                    // Rating and location
                     HStack {
                         HStack(spacing: 4) {
                             Image(systemName: "star.fill")
@@ -331,7 +330,6 @@ struct CollaborationDetailView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(16)
                 
-                // Collaboration Details
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Collaboration Details")
                         .font(.headline)
@@ -346,7 +344,6 @@ struct CollaborationDetailView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(16)
                 
-                // Business Description
                 VStack(alignment: .leading, spacing: 12) {
                     Text("About")
                         .font(.headline)
@@ -360,7 +357,6 @@ struct CollaborationDetailView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(16)
                 
-                // Business Model
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Business Model")
                         .font(.headline)
@@ -374,7 +370,6 @@ struct CollaborationDetailView: View {
                 .background(Color(.systemGray6))
                 .cornerRadius(16)
                 
-                // Support Provided
                 if !collaboration.supportProvided.isEmpty {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Support Provided")
@@ -401,7 +396,6 @@ struct CollaborationDetailView: View {
                     .cornerRadius(16)
                 }
                 
-                // Contact Button
                 Button(action: {
                     showingContactSheet = true
                 }) {
@@ -484,7 +478,6 @@ struct CollaborationContactSheet: View {
                     .fontWeight(.bold)
                     .padding(.top)
                 
-                // Check if this is user's own collaboration
                 if isOwnCollaboration() {
                     VStack(spacing: 16) {
                         Image(systemName: "building.2.fill")
@@ -501,7 +494,6 @@ struct CollaborationContactSheet: View {
                             .foregroundColor(Theme.textSecondary)
                             .multilineTextAlignment(.center)
                         
-                        // Show contact information directly since it's their own collaboration
                         VStack(alignment: .leading, spacing: 16) {
                             ContactInfoRow(icon: "phone.fill", title: "Phone", value: collaboration.contactPhone)
                             ContactInfoRow(icon: "envelope.fill", title: "Email", value: collaboration.contactEmail)
@@ -515,7 +507,6 @@ struct CollaborationContactSheet: View {
                         .cornerRadius(16)
                     }
                 } else if cloudkitViewModel.hasUserPaidForCollaborationContact(collaboration: collaboration) {
-                    // Show contact information for paid users
                     VStack(alignment: .leading, spacing: 16) {
                         ContactInfoRow(icon: "phone.fill", title: "Phone", value: collaboration.contactPhone)
                         ContactInfoRow(icon: "envelope.fill", title: "Email", value: collaboration.contactEmail)
@@ -528,7 +519,6 @@ struct CollaborationContactSheet: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(16)
                 } else {
-                    // Show payment required section for other users
                     VStack(spacing: 16) {
                         VStack(spacing: 12) {
                             Image(systemName: "lock.fill")

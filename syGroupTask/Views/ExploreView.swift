@@ -13,7 +13,6 @@ struct ExploreView: View {
             Theme.background
             VStack(spacing: 20) {
                 
-                // Search Bar
                 Button {
                     isSearching = true
                 } label: {

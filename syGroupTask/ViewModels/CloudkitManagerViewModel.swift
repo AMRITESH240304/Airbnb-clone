@@ -23,7 +23,6 @@ class CloudkitManagerViewModel: ObservableObject {
     @Published var wishlistedProperties: [PropertyListing] = []
     @Published var hasLoadedWishlist = false
     
-    // Payment related
     @Published var userPayments: [Payment] = []
     @Published var hasLoadedPayments = false
     @Published var allPayments: [Payment] = []
@@ -38,7 +37,6 @@ class CloudkitManagerViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
-    // Make cachedUserID accessible
     var cachedUserID: String? {
         return _cachedUserID
     }
@@ -48,7 +46,6 @@ class CloudkitManagerViewModel: ObservableObject {
     @Published var hasLoadedProfessionals = false
     @Published var currentUserProfessional: Professional?
 
-    // Add these properties to the class
     @Published var collaborations: [Collaboration] = []
     @Published var hasLoadedCollaborations = false
     @Published var currentUserCollaboration: Collaboration?
@@ -356,7 +353,6 @@ class CloudkitManagerViewModel: ObservableObject {
                     }
                 }
                 
-                // Changed from privateDB to publicDB for development
                 self.publicDB.add(operation)
                 
             case .failure(let error):
@@ -498,7 +494,6 @@ class CloudkitManagerViewModel: ObservableObject {
 
             switch result {
             case .success(let userID):
-                // Check if already in wishlist
                 if self.wishlistItems.contains(where: { $0.propertyID == property.id && $0.ownerID == userID }) {
                     completion(.success(()))
                     return
@@ -536,7 +531,6 @@ class CloudkitManagerViewModel: ObservableObject {
                         savedWishlistItem.recordID = savedRecord.recordID
                         self.wishlistItems.append(savedWishlistItem)
 
-                        // Add to wishlisted properties if not already there
                         if !self.wishlistedProperties.contains(where: { $0.id == property.id }) {
                             self.wishlistedProperties.append(property)
                         }
@@ -638,7 +632,6 @@ class CloudkitManagerViewModel: ObservableObject {
                             }
                             self.hasLoadedWishlist = true
 
-                            // Fetch the actual properties for the wishlist
                             self.fetchWishlistedProperties()
 
                         case .failure(let error):
@@ -717,7 +710,6 @@ class CloudkitManagerViewModel: ObservableObject {
             record["contactCount"] = currentCount + 1
             
             self.publicDB.save(record) { _, _ in
-                // Update local property as well
                 DispatchQueue.main.async {
                     if let index = self.allProperties.firstIndex(where: { $0.id == property.id }) {
                         self.allProperties[index].contactCount += 1
@@ -816,12 +808,10 @@ class CloudkitManagerViewModel: ObservableObject {
         
         let receivedPayments = allPayments.filter { $0.recipientID == userID && $0.paymentStatus == .completed }
         
-        // Calculate total amounts
         let totalAmount = receivedPayments.reduce(0) { $0 + $1.netAmount }
         let totalPlatformFee = receivedPayments.reduce(0) { $0 + $1.platformFeeAmount }
         let paymentCount = receivedPayments.count
         
-        // Group by property
         let propertyGroups = Dictionary(grouping: receivedPayments) { $0.propertyID }
         let propertyRevenue = propertyGroups.map { (propertyID, payments) in
             let revenue = payments.reduce(0) { $0 + $1.netAmount }
@@ -837,14 +827,12 @@ class CloudkitManagerViewModel: ObservableObject {
             )
         }.sorted { $0.revenue > $1.revenue }
         
-        // Group by payment type
         let typeGroups = Dictionary(grouping: receivedPayments) { $0.paymentType }
         let typeRevenue = typeGroups.map { (type, payments) in
             let revenue = payments.reduce(0) { $0 + $1.netAmount }
             return TypeRevenueData(type: type.rawValue, revenue: revenue)
         }
         
-        // Monthly data
         let calendar = Calendar.current
         let monthlyGroups = Dictionary(grouping: receivedPayments) { payment in
             calendar.dateInterval(of: .month, for: payment.transactionDate)?.start ?? payment.transactionDate
@@ -912,7 +900,6 @@ class CloudkitManagerViewModel: ObservableObject {
             }
         }
         
-        // Calculate filtered revenue data similar to calculateRevenueData()
         let totalAmount = filteredPayments.reduce(0) { $0 + $1.netAmount }
         let totalPlatformFee = filteredPayments.reduce(0) { $0 + $1.platformFeeAmount }
         let paymentCount = filteredPayments.count
@@ -973,7 +960,7 @@ class CloudkitManagerViewModel: ObservableObject {
                 let payment = Payment(
                     id: UUID(),
                     recordID: nil,
-                    propertyID: UUID(), // Placeholder - not property related
+                    propertyID: UUID(),
                     propertyTitle: "Professional Registration",
                     propertyLocation: "Platform Service",
                     payerID: userID,
@@ -1028,7 +1015,6 @@ class CloudkitManagerViewModel: ObservableObject {
             case .success(let userID):
                 let experience = Int(formData.experience) ?? 0
                 
-                // Ensure we have at least one category
                 let categories = Array(formData.selectedCategories)
                 guard !categories.isEmpty else {
                     let error = NSError(domain: "ProfessionalCreation", code: 1, userInfo: [NSLocalizedDescriptionKey: "At least one category must be selected"])
@@ -1040,18 +1026,18 @@ class CloudkitManagerViewModel: ObservableObject {
                     id: UUID(),
                     recordID: nil,
                     userID: userID,
-                    userName: "Current User", // Get from user profile
+                    userName: "Current User",
                     businessName: formData.businessName,
                     description: formData.description,
                     phoneNumber: formData.phoneNumber,
                     email: formData.email,
                     location: formData.location,
                     website: formData.website.isEmpty ? nil : formData.website,
-                    services: formData.services, // Can be empty
+                    services: formData.services,
                     categories: categories,
                     experience: experience,
                     profileImageURL: formData.profileImageURL.isEmpty ? nil : formData.profileImageURL,
-                    portfolioImages: formData.portfolioImages, // Can be empty
+                    portfolioImages: formData.portfolioImages,
                     rating: 0.0,
                     reviewCount: 0,
                     isVerified: false,
@@ -1168,7 +1154,6 @@ class CloudkitManagerViewModel: ObservableObject {
             
             switch result {
             case .success(let userID):
-                // Check if user has already paid for this professional contact
                 let hasAlreadyPaid = self.userPayments.contains { payment in
                     payment.propertyID == professional.id &&
                     payment.payerID == userID &&
@@ -1186,7 +1171,6 @@ class CloudkitManagerViewModel: ObservableObject {
                     return
                 }
                 
-                // Check if user is trying to pay for their own professional profile
                 if professional.userID == userID {
                     let error = NSError(
                         domain: "PaymentManager",
@@ -1258,8 +1242,6 @@ class CloudkitManagerViewModel: ObservableObject {
             }
         }
     }
-    
-    // Add these methods to the CloudkitManagerViewModel class
 
     // MARK: - Collaboration Methods
 
@@ -1276,7 +1258,7 @@ class CloudkitManagerViewModel: ObservableObject {
                 let payment = Payment(
                     id: UUID(),
                     recordID: nil,
-                    propertyID: UUID(), // Placeholder - not property related
+                    propertyID: UUID(),
                     propertyTitle: "Collaboration Registration",
                     propertyLocation: "Platform Service",
                     payerID: userID,
@@ -1343,12 +1325,12 @@ class CloudkitManagerViewModel: ObservableObject {
                     contactPhone: formData.contactPhone,
                     website: formData.website.isEmpty ? nil : formData.website,
                     logoImageURL: formData.logoImageURL.isEmpty ? nil : formData.logoImageURL,
-                    businessImages: [], // Start with empty array - can be updated later
+                    businessImages: [],
                     investmentRange: formData.investmentRange,
                     expectedROI: formData.expectedROI,
                     businessModel: formData.businessModel,
                     experienceRequired: formData.experienceRequired,
-                    supportProvided: Array(formData.supportProvided), // Convert Set to Array
+                    supportProvided: Array(formData.supportProvided),
                     isVerified: false,
                     isPremium: false,
                     rating: 0.0,
@@ -1464,7 +1446,6 @@ class CloudkitManagerViewModel: ObservableObject {
             
             switch result {
             case .success(let userID):
-                // Check if user has already paid for this collaboration contact
                 let hasAlreadyPaid = self.userPayments.contains { payment in
                     payment.propertyID == collaboration.id &&
                     payment.payerID == userID &&
@@ -1482,7 +1463,6 @@ class CloudkitManagerViewModel: ObservableObject {
                     return
                 }
                 
-                // Check if user is trying to pay for their own collaboration
                 if collaboration.userID == userID {
                     let error = NSError(
                         domain: "PaymentManager",

@@ -78,9 +78,8 @@ struct ProfileViews: View {
             Divider()
                 .padding(.vertical, 8)
             
-            // Settings row
             Button(action: {
-                // Account settings action
+                
             }) {
                 HStack {
                     Image(systemName: "gearshape")
@@ -102,9 +101,7 @@ struct ProfileViews: View {
             
             Divider()
             
-            // Get help row
             Button(action: {
-                // Get help action
             }) {
                 HStack {
                     Image(systemName: "questionmark.circle")
@@ -126,9 +123,8 @@ struct ProfileViews: View {
             
             Divider()
             
-            // Legal row
             Button(action: {
-                // Legal action
+                
             }) {
                 HStack {
                     Image(systemName: "book.closed")

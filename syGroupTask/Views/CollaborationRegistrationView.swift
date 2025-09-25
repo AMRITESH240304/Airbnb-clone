@@ -43,7 +43,6 @@ struct CollaborationRegistrationView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(16)
                     
-                    // Business Information
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Business Information")
                             .font(.headline)
@@ -75,7 +74,6 @@ struct CollaborationRegistrationView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(16)
                     
-                    // Contact Information
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Contact Information")
                             .font(.headline)
@@ -99,7 +97,6 @@ struct CollaborationRegistrationView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(16)
                     
-                    // Business Details
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Business Details")
                             .font(.headline)
@@ -132,7 +129,6 @@ struct CollaborationRegistrationView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(16)
                     
-                    // Support Provided
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Support Provided")
                             .font(.headline)
@@ -165,7 +161,6 @@ struct CollaborationRegistrationView: View {
                     .background(Color(.systemGray6))
                     .cornerRadius(16)
                     
-                    // Register Button
                     Button(action: {
                         processRegistration()
                     }) {

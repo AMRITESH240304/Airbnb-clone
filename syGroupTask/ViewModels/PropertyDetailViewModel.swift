@@ -35,10 +35,8 @@ class PropertyDetailViewModel: ObservableObject {
         preloadPropertyImages()
     }
     
-    // Add this function to set cloudkit from environment
     func setCloudkitViewModel(_ viewModel: CloudkitManagerViewModel) {
         self.cloudkitViewModel = viewModel
-        // Fetch user payments when CloudKit is set
         viewModel.fetchUserPayments()
     }
     
@@ -264,8 +262,6 @@ class PropertyDetailViewModel: ObservableObject {
         }
     }
 }
-
-// Add this method to your existing PropertyDetailViewModel
 
 extension PropertyDetailViewModel {
     func processPaymentWithDates(startDate: Date?, endDate: Date?) {

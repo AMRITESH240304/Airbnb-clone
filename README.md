@@ -75,6 +75,60 @@ class AuthManagerViewModel: ObservableObject {
 - `Booking`: Reservation records linking users to properties
 - `User`: User profiles and authentication data
 
+## 🔍 Search System Architecture
+
+### Advanced Property Search Implementation
+
+The search system provides comprehensive property discovery through multiple search mechanisms:
+
+#### **Search Architecture**
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   SearchView    │───▶│ SearchViewModel │───▶│   CloudKit      │
+│   (SwiftUI)     │    │  (@Published)   │    │   Properties    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+#### **SearchViewModel Features**
+- **Real-time Search**: Instant filtering as user types
+- **Smart Sorting**: Relevance-based result ordering (title → location → category)
+- **Recent Searches**: Persistent search history (up to 5 recent searches)
+- **Category Filtering**: Browse by property categories (Apartment, House, Villa, etc.)
+- **Listing Type Filtering**: Filter by For Sale/For Rent
+- **Location-based Search**: Nearby properties discovery
+
+```swift
+class SearchViewModel: ObservableObject {
+    @Published var searchText: String = ""
+    @Published var searchResults: [PropertyListing] = []
+    @Published var isShowingResults: Bool = false
+    @Published var isLoading: Bool = false
+    @Published var recentSearches: [String] = []
+    
+    // Multi-field search implementation
+    // Smart relevance sorting
+    // Category and type filtering
+}
+```
+
+#### **Search Capabilities**
+
+##### **Multi-Field Search**
+The search algorithm searches across multiple property fields:
+- **Property Title**: Primary search field
+- **Location**: City, state, area names
+- **Category**: Property type (Apartment, House, Villa, etc.)
+- **Description**: Full text search in property descriptions
+- **Owner Name**: Search by property owner
+- **Listing Type**: For Sale, For Rent classification
+
+##### **Search Prioritization**
+Results are intelligently sorted by relevance:
+1. **Title Matches**: Properties with matching titles appear first
+2. **Location Matches**: Location-based matches ranked second
+3. **Category Matches**: Category matches follow
+4. **Date Relevance**: Among equal matches, newest listings appear first
+
 ## 📊 CloudKit Database Architecture
 
 ![Booking and Property Management](images/main.png)

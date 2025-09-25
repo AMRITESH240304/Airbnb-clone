@@ -40,7 +40,6 @@ struct TripsView: View {
                         AddPropertyView(wasListingAdded: $wasNewPropertyAdded)
                             .presentationDetents([.large])
                             .onDisappear {
-                                // Only refresh if a property was successfully added
                                 if wasNewPropertyAdded {
                                     cloudKitManager.fetchUserListings(forceRefresh: true)
                                     wasNewPropertyAdded = false
@@ -88,7 +87,7 @@ struct TripsView: View {
                 emptyStateView
             } else {
                 VStack(alignment: .leading) {
-                    LazyVStack(spacing: 16) { // Changed from LazyVGrid to LazyVStack
+                    LazyVStack(spacing: 16) {
                         ForEach(cloudKitManager.userProperties) { property in
                             NavigationLink(
                                 destination: PropertyDetailView(property: property)
@@ -157,22 +156,19 @@ struct TripsView: View {
 
     private func propertyCard(for property: PropertyListing) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Reuse PropertyImageCarousel from PropertyDetailView
             PropertyImageCarousel(photoURLs: property.photoURLs)
-                .frame(height: 120) // Adjust height to fit the grid
-                .clipShape(RoundedRectangle(cornerRadius: 8)) // Smaller corner radius for compact design
+                .frame(height: 120)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
 
-            // Reuse PropertyHeaderSection
             PropertyHeaderSection(property: property)
-                .padding(.horizontal, 4) // Reduce padding for compact layout
+                .padding(.horizontal, 4)
 
-            // Reuse PropertyPriceSection
             PropertyPriceSection(property: property, viewModel: PropertyDetailViewModel(cardId: property.id, property: property))
-                .padding(.horizontal, 4) // Reduce padding for compact layout
+                .padding(.horizontal, 4)
         }
-        .padding(8) // Reduce overall padding
+        .padding(8)
         .background(Color(.systemGray6))
-        .cornerRadius(12) // Adjust corner radius for compact design
+        .cornerRadius(12) 
         .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 }

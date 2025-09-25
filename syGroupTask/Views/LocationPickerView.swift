@@ -82,7 +82,6 @@ struct LocationPickerView: View {
                     viewModel.mapCenterCoordinate = context.region.center
                 }
                 .overlay(alignment: .center) {
-                    // Center pin that doesn't move
                     Image(systemName: "mappin.circle.fill")
                         .font(.title)
                         .foregroundColor(Theme.primaryColor)

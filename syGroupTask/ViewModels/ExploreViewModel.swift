@@ -33,9 +33,8 @@ class ExploreViewModel: ObservableObject {
         
         Task {
             // Simulate data refresh
-            try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+            try await Task.sleep(nanoseconds: 1_000_000_000)
             
-            // Preload images after refresh
             preloadImages()
             
             isLoading = false
@@ -46,10 +45,8 @@ class ExploreViewModel: ObservableObject {
     
     private func preloadImages() {
         Task {
-            // Collect all image URLs from current data
             let allImageUrls = getAllImageUrls()
             
-            // Preload images in background
             imageCache.preloadImages(allImageUrls)
         }
     }
@@ -76,7 +73,6 @@ class ExploreViewModel: ObservableObject {
     private func getAllImageUrls() -> [String] {
         var urls: [String] = []
         
-        // Add URLs from all sections
         urls.append(contentsOf: getHomesImageUrls())
         urls.append(contentsOf: getExperienceImageUrls())
         urls.append(contentsOf: getServicesImageUrls())
@@ -87,16 +83,12 @@ class ExploreViewModel: ObservableObject {
     private func getHomesImageUrls() -> [String] {
         var urls: [String] = []
         
-        // Sample cards
         urls.append(contentsOf: MockData.sampleCards.compactMap { $0.imageURL })
         
-        // Available for similar dates
         urls.append(contentsOf: MockData.availableForSimilarDates.compactMap { $0.imageURL })
         
-        // Stay in Puducherry
         urls.append(contentsOf: MockData.stayInPuducherry.compactMap { $0.imageURL })
         
-        // Stay in Paris
         urls.append(contentsOf: MockData.stayInParis.compactMap { $0.imageURL })
         
         return urls
@@ -105,13 +97,10 @@ class ExploreViewModel: ObservableObject {
     private func getExperienceImageUrls() -> [String] {
         var urls: [String] = []
         
-        // Airbnb Originals
         urls.append(contentsOf: MockData.airbnbOriginals.compactMap { $0.imageURL })
         
-        // Photography experiences
         urls.append(contentsOf: MockData.photographyExperiences.compactMap { $0.imageURL })
         
-        // All experiences in Pondicherry
         urls.append(contentsOf: MockData.allExperiencesPondicherry.compactMap { $0.imageURL })
         
         return urls
@@ -120,10 +109,8 @@ class ExploreViewModel: ObservableObject {
     private func getServicesImageUrls() -> [String] {
         var urls: [String] = []
         
-        // Services
         urls.append(contentsOf: MockData.servicesInPromenadeBeach.compactMap { $0.imageURL })
         
-        // Photography (services tab)
         urls.append(contentsOf: MockData.photographyExperiences.compactMap { $0.imageURL })
         
         return urls

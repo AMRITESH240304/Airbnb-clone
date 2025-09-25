@@ -17,11 +17,9 @@ class ProfessionalRegistrationViewModel: ObservableObject {
                    !formData.location.isEmpty &&
                    !formData.experience.isEmpty
         case .services:
-            // Must have at least one category selected
-            // Services can be empty - they can add them later
             return !formData.selectedCategories.isEmpty
         case .portfolio:
-            return true // Portfolio is completely optional
+            return true
         case .payment:
             return formData.agreedToTerms
         }
@@ -37,14 +35,12 @@ class ProfessionalRegistrationViewModel: ObservableObject {
         
         isProcessingPayment = true
         
-        // First process payment
         cloudkitViewModel.processProfessionalRegistrationPayment { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 
                 switch result {
                 case .success:
-                    // Payment successful, now create professional profile
                     self.createProfessionalProfile(cloudkitViewModel: cloudkitViewModel, completion: completion)
                 case .failure(let error):
                     self.isProcessingPayment = false

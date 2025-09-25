@@ -86,7 +86,6 @@ struct RecentPropertyCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Image with heart button
             ZStack(alignment: .topTrailing) {
                 AsyncImage(url: URL(string: property.imageURL)) { image in
                     image
@@ -112,7 +111,6 @@ struct RecentPropertyCard: View {
                 .padding(8)
             }
             
-            // Property Details
             VStack(alignment: .leading, spacing: 4) {
                 Text(property.title)
                     .font(.system(size: isGridLayout ? 14 : 16, weight: .medium))

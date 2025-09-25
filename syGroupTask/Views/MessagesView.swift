@@ -33,7 +33,7 @@ struct MessagesView: View {
         .onAppear {
             if authViewModel.isAuthenticated {
                 cloudkitViewModel.fetchUserPayments(forceRefresh: true)
-                cloudkitViewModel.fetchAllPayments() // Fetch all payments to see property bookings
+                cloudkitViewModel.fetchAllPayments()
             }
         }
     }
@@ -74,7 +74,6 @@ struct MessagesView: View {
             }
             .padding(.horizontal, 20)
             
-            // Filter Chips
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(filters, id: \.self) { filter in
@@ -85,7 +84,6 @@ struct MessagesView: View {
                                 Text(filter)
                                     .font(.system(size: 16, weight: .medium))
                                 
-                                // Show badge count for bookings
                                 if (filter == "My Bookings" && !userBookings.isEmpty) ||
                                    (filter == "Property Bookings" && !propertyBookings.isEmpty) {
                                     Text("\(filter == "My Bookings" ? userBookings.count : propertyBookings.count)")
@@ -116,7 +114,6 @@ struct MessagesView: View {
                 .padding(.horizontal, 20)
             }
             
-            // Content based on selected filter
             ScrollView {
                 LazyVStack(spacing: 16) {
                     if selectedFilter == "All" || selectedFilter == "My Bookings" {
@@ -208,7 +205,6 @@ struct MessagesView: View {
                 }
             }
             
-            // Empty messages for now
             if selectedFilter == "Messages" {
                 emptyMessagesView
             }
@@ -227,7 +223,6 @@ struct MessagesView: View {
                 }
             }
             
-            // Empty support for now
             if selectedFilter == "Support" {
                 emptySupportView
             }
@@ -310,7 +305,6 @@ struct MessagesView: View {
         .padding(.vertical, 40)
     }
     
-    // Computed properties for filtering bookings
     private var userBookings: [Payment] {
         cloudkitViewModel.userPayments.filter { payment in
             payment.paymentType == .propertyContact && 
@@ -332,7 +326,7 @@ struct MessagesView: View {
     
     private var displayedUserBookings: [Payment] {
         if selectedFilter == "All" {
-            return Array(userBookings.prefix(3)) // Show only first 3 in "All" view
+            return Array(userBookings.prefix(3))
         } else {
             return userBookings
         }
@@ -340,7 +334,7 @@ struct MessagesView: View {
     
     private var displayedPropertyBookings: [Payment] {
         if selectedFilter == "All" {
-            return Array(propertyBookings.prefix(3)) // Show only first 3 in "All" view
+            return Array(propertyBookings.prefix(3))
         } else {
             return propertyBookings
         }
@@ -349,7 +343,7 @@ struct MessagesView: View {
 
 struct BookingCardView: View {
     let payment: Payment
-    let isOwnerView: Bool // True when showing bookings for property owner
+    let isOwnerView: Bool
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -365,7 +359,6 @@ struct BookingCardView: View {
                         .foregroundColor(Theme.textSecondary)
                         .lineLimit(1)
                     
-                    // Show booker info for property owners
                     if isOwnerView {
                         Text("Booked by: \(payment.payerName)")
                             .font(.system(size: 12, weight: .medium))

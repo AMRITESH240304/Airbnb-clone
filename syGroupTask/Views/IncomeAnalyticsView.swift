@@ -10,7 +10,6 @@ struct IncomeAnalyticsView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Time Frame Picker
                     Picker("Time Frame", selection: $selectedTimeFrame) {
                         ForEach(TimeFrame.allCases) { timeFrame in
                             Text(timeFrame.rawValue).tag(timeFrame)
@@ -19,19 +18,14 @@ struct IncomeAnalyticsView: View {
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(.horizontal)
                     
-                    // Total Revenue Card
                     totalRevenueCard
                     
-                    // Revenue by Property Chart
                     revenueByPropertyChart
                     
-                    // Revenue by Payment Type Chart
                     revenueByTypeChart
                     
-                    // Monthly Trend Chart
                     monthlyTrendChart
                     
-                    // Property Performance List
                     propertyPerformanceList
                 }
                 .padding()

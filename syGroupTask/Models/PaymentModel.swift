@@ -33,7 +33,6 @@ struct Payment: Identifiable,Equatable {
     
     var netAmount: Double
     
-    // Add booking dates
     var bookingStartDate: Date?
     var bookingEndDate: Date?
     
@@ -175,13 +174,11 @@ struct RevenueConfig {
     static let subscriptionMonthlyFee: Double = 299.0
     static let subscriptionYearlyFee: Double = 2999.0
     
-    // Professional fees
     static let professionalRegistrationFee: Double = 1500.0
     static let professionalMonthlySubscription: Double = 499.0
     static let professionalYearlySubscription: Double = 4999.0
-    static let professionalServiceCommission: Double = 10.0 // percentage
+    static let professionalServiceCommission: Double = 10.0
     
-    // Collaboration fees
     static let collaborationRegistrationFee: Double = 2000.0
     static let collaborationMonthlySubscription: Double = 699.0
     static let collaborationYearlySubscription: Double = 6999.0
