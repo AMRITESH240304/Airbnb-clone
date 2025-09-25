@@ -10,6 +10,7 @@ import SwiftUI
 struct SearchView: View {
     @Binding var isSearching: Bool
     @StateObject private var viewModel = SearchViewModel()
+    @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
     
     var body: some View {
         NavigationStack {
@@ -26,7 +27,72 @@ struct SearchView: View {
             .onChange(of: viewModel.searchText) { _, newValue in
                 viewModel.performSearch(query: newValue)
             }
+            .onAppear {
+                viewModel.setCloudkitViewModel(cloudkitViewModel)
+                // Ensure properties are loaded
+                if cloudkitViewModel.allProperties.isEmpty {
+                    cloudkitViewModel.fetchAllListings()
+                }
+            }
         }
+    }
+}
+
+// MARK: - Default Search View (when not searching)
+struct DefaultSearchView: View {
+    @ObservedObject var viewModel: SearchViewModel
+    
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                // Search Bar
+                SearchBarPlaceholder(viewModel: viewModel)
+                
+                // Recent Searches
+                if !viewModel.recentSearches.isEmpty {
+                    RecentSearchesSection(viewModel: viewModel)
+                }
+                
+                // Suggested Categories
+                SuggestedCategoriesSection(viewModel: viewModel)
+                
+                // Quick Filters
+                QuickFiltersSection(viewModel: viewModel)
+                
+                Spacer()
+            }
+            .padding()
+        }
+    }
+}
+
+struct SearchBarPlaceholder: View {
+    @ObservedObject var viewModel: SearchViewModel
+    @FocusState private var isSearchFocused: Bool
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(Theme.textSecondary)
+                .font(.system(size: 18))
+            
+            TextField("Search properties, locations, categories...", text: $viewModel.searchText)
+                .textFieldStyle(PlainTextFieldStyle())
+                .font(.system(size: 16))
+                .focused($isSearchFocused)
+            
+            if !viewModel.searchText.isEmpty {
+                Button {
+                    viewModel.clearSearch()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(Theme.textSecondary)
+                }
+            }
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 }
 
@@ -41,25 +107,23 @@ struct RecentSearchesSection: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Theme.textPrimary)
                 Spacer()
+                Button("Clear all") {
+                    viewModel.clearRecentSearches()
+                }
+                .font(.system(size: 14))
+                .foregroundColor(Theme.textSecondary)
             }
             
-            VStack(spacing: 16) {
-                RecentSearchRow(
-                    icon: "mappin.circle.fill",
-                    iconColor: Theme.textSecondary,
-                    title: "Promenade Beach",
-                    subtitle: "5–7 Sept"
-                ) {
-                    viewModel.selectRecentSearch("Promenade Beach")
-                }
-                
-                RecentSearchRow(
-                    icon: "building.2.fill",
-                    iconColor: .green,
-                    title: "Puducherry",
-                    subtitle: "5–7 Sept"
-                ) {
-                    viewModel.selectRecentSearch("Puducherry")
+            VStack(spacing: 12) {
+                ForEach(viewModel.recentSearches, id: \.self) { search in
+                    RecentSearchRow(
+                        icon: "clock",
+                        iconColor: Theme.textSecondary,
+                        title: search,
+                        subtitle: "Recent search"
+                    ) {
+                        viewModel.selectRecentSearch(search)
+                    }
                 }
             }
         }
@@ -78,106 +142,153 @@ struct RecentSearchRow: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.system(size: 24))
+                    .font(.system(size: 20))
                     .foregroundColor(iconColor)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Theme.textPrimary)
                     Text(subtitle)
-                        .font(.system(size: 14))
+                        .font(.system(size: 12))
                         .foregroundColor(Theme.textSecondary)
                 }
                 Spacer()
             }
+            .padding(.vertical, 4)
         }
     }
 }
 
-// MARK: - Suggested Destinations Section
-struct SuggestedDestinationsSection: View {
+// MARK: - Suggested Categories Section
+struct SuggestedCategoriesSection: View {
+    @ObservedObject var viewModel: SearchViewModel
+    
+    let categories = ["Apartment", "House", "Villa", "Office Space", "Shop", "Land"]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Browse by category")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Theme.textPrimary)
+            
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: 12) {
+                ForEach(categories, id: \.self) { category in
+                    Button {
+                        viewModel.filterByCategory(category)
+                    } label: {
+                        HStack {
+                            Text(category)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Theme.textPrimary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12))
+                                .foregroundColor(Theme.textSecondary)
+                        }
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .shadow(color: Color.black.opacity(0.05), radius: 1, x: 0, y: 1)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Quick Filters Section
+struct QuickFiltersSection: View {
     @ObservedObject var viewModel: SearchViewModel
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Suggested destinations")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Theme.textPrimary)
-                Spacer()
-            }
+            Text("Quick filters")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Theme.textPrimary)
             
-            Button {
-                viewModel.performNearbySearch()
-            } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: "location.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.blue)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Nearby")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Theme.textPrimary)
-                        Text("Find what's around you")
-                            .font(.system(size: 14))
+            VStack(spacing: 12) {
+                Button {
+                    viewModel.performNearbySearch()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(.blue)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Nearby Properties")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Theme.textPrimary)
+                            Text("Find properties around you")
+                                .font(.system(size: 12))
+                                .foregroundColor(Theme.textSecondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12))
                             .foregroundColor(Theme.textSecondary)
                     }
-                    Spacer()
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .shadow(color: Color.black.opacity(0.05), radius: 1, x: 0, y: 1)
                 }
-            }
-            
-            Button {
-                viewModel.selectRecentSearch("Puducherry")
-            } label: {
-                HStack(spacing: 12) {
-                    Spacer()
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Puducherry, Puducherry")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Theme.textPrimary)
+                
+                Button {
+                    viewModel.filterByListingType(.forRent)
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "house.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(.green)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("For Rent")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Theme.textPrimary)
+                            Text("Properties available for rent")
+                                .font(.system(size: 12))
+                                .foregroundColor(Theme.textSecondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12))
+                            .foregroundColor(Theme.textSecondary)
                     }
-                    Spacer()
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .shadow(color: Color.black.opacity(0.05), radius: 1, x: 0, y: 1)
+                }
+                
+                Button {
+                    viewModel.filterByListingType(.forSale)
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "building.2.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(.orange)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("For Sale")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Theme.textPrimary)
+                            Text("Properties available for purchase")
+                                .font(.system(size: 12))
+                                .foregroundColor(Theme.textSecondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12))
+                            .foregroundColor(Theme.textSecondary)
+                    }
+                    .padding()
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .shadow(color: Color.black.opacity(0.05), radius: 1, x: 0, y: 1)
                 }
             }
         }
-    }
-}
-
-// MARK: - Search Footer Section
-struct SearchFooterSection: View {
-    @ObservedObject var viewModel: SearchViewModel
-    
-    var body: some View {
-        HStack {
-            Button("Clear all") {
-                viewModel.clearSearch()
-            }
-            .font(.system(size: 16, weight: .medium))
-            .foregroundColor(Theme.textPrimary)
-            .underline()
-            
-            Spacer()
-            
-            Button {
-                if !viewModel.searchText.isEmpty {
-                    viewModel.performSearch(query: viewModel.searchText)
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 16, weight: .medium))
-                    Text("Search")
-                        .font(.system(size: 16, weight: .medium))
-                }
-                .foregroundColor(Theme.textLight)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 16)
-                .background(Theme.primaryColor)
-                .cornerRadius(12)
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 40)
     }
 }
 
@@ -189,7 +300,6 @@ struct SearchResultsView: View {
         VStack(spacing: 0) {
             SearchResultsHeader(viewModel: viewModel)
             SearchResultsContent(viewModel: viewModel)
-            Spacer()
         }
         .background(Theme.background)
     }
@@ -206,7 +316,7 @@ struct SearchResultsHeader: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(Theme.textSecondary)
                     .font(.system(size: 18))
-                TextField("Search destinations", text: $viewModel.searchText)
+                TextField("Search properties...", text: $viewModel.searchText)
                     .textFieldStyle(PlainTextFieldStyle())
                     .font(.system(size: 16))
                 
@@ -220,7 +330,8 @@ struct SearchResultsHeader: View {
                 }
             }
             .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color.gray.opacity(0.1)))
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+            .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
             
             // Results count
             HStack {
@@ -244,9 +355,9 @@ struct SearchResultsContent: View {
         if viewModel.isLoading {
             LoadingView()
         } else if viewModel.shouldShowNoResults {
-            NoResultsView()
+            NoResultsView(searchQuery: viewModel.searchText)
         } else if viewModel.hasResults {
-            SearchResultsGrid(viewModel: viewModel)
+            SearchResultsList(viewModel: viewModel)
         }
     }
 }
@@ -259,7 +370,7 @@ struct LoadingView: View {
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle())
                 .scaleEffect(1.5)
-            Text("Searching...")
+            Text("Searching properties...")
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Theme.textSecondary)
             Spacer()
@@ -270,41 +381,51 @@ struct LoadingView: View {
 
 // MARK: - No Results View
 struct NoResultsView: View {
+    let searchQuery: String
+    
     var body: some View {
         VStack(spacing: 16) {
             Spacer()
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 48))
                 .foregroundColor(Theme.textSecondary)
-            Text("No places found")
+            Text("No properties found")
                 .font(.system(size: 18, weight: .medium))
                 .foregroundColor(Theme.textPrimary)
-            Text("Try searching for a different location")
+            Text("Try searching for different keywords or check your spelling")
                 .font(.system(size: 14))
                 .foregroundColor(Theme.textSecondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            
+            if !searchQuery.isEmpty {
+                Text("Searched for: \"\(searchQuery)\"")
+                    .font(.system(size: 12))
+                    .foregroundColor(Theme.textSecondary)
+                    .italic()
+                    .padding(.top, 8)
+            }
             Spacer()
         }
         .padding()
     }
 }
 
-// MARK: - Search Results Grid
-struct SearchResultsGrid: View {
+// MARK: - Search Results List
+struct SearchResultsList: View {
     @ObservedObject var viewModel: SearchViewModel
     
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 8),
-                GridItem(.flexible(), spacing: 8)
-            ], spacing: 16) {
-                ForEach(viewModel.searchResults) { card in
+            LazyVStack(spacing: 16) {
+                ForEach(viewModel.searchResults) { property in
                     NavigationLink {
-                        CardsDetailView(cardId: card.id)
+                        PropertyDetailView(property: property)
                             .toolbar(.hidden, for: .tabBar)
                     } label: {
-                        SearchResultCard(card: card)
+                        PropertyListItemView(property: property)
                     }
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
             .padding(.horizontal, 16)
@@ -316,4 +437,5 @@ struct SearchResultsGrid: View {
 
 #Preview {
     SearchView(isSearching: .constant(true))
+        .environmentObject(CloudkitManagerViewModel())
 }

@@ -11,12 +11,21 @@ import SwiftUI
 @MainActor
 class SearchViewModel: ObservableObject {
     @Published var searchText: String = ""
-    @Published var searchResults: [CardModel] = []
+    @Published var searchResults: [PropertyListing] = []
     @Published var isShowingResults: Bool = false
     @Published var isLoading: Bool = false
+    @Published var recentSearches: [String] = []
+    
+    private var cloudkitViewModel: CloudkitManagerViewModel?
+    
+    func setCloudkitViewModel(_ viewModel: CloudkitManagerViewModel) {
+        self.cloudkitViewModel = viewModel
+    }
     
     // MARK: - Search Functions
     func performSearch(query: String) {
+        guard let cloudkitViewModel = cloudkitViewModel else { return }
+        
         if query.isEmpty {
             clearSearchResults()
             return
@@ -25,31 +34,71 @@ class SearchViewModel: ObservableObject {
         isLoading = true
         isShowingResults = true
         
-        // Simulate network delay
+        // Add to recent searches if not already present
+        if !recentSearches.contains(query) {
+            recentSearches.insert(query, at: 0)
+            if recentSearches.count > 5 {
+                recentSearches.removeLast()
+            }
+        }
+        
+        // Simulate network delay for better UX
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            self.executeSearch(query: query)
+            self.executeSearch(query: query, properties: cloudkitViewModel.allProperties)
             self.isLoading = false
         }
     }
     
-    private func executeSearch(query: String) {
-        let allCards = MockData.sampleCards +
-                      MockData.availableForSimilarDates +
-                      MockData.stayInPuducherry +
-                      MockData.stayInParis
+    private func executeSearch(query: String, properties: [PropertyListing]) {
+        let lowercasedQuery = query.lowercased()
         
-        searchResults = allCards.filter { card in
-            card.flatName.localizedCaseInsensitiveContains(query) ||
-            card.location.localizedCaseInsensitiveContains(query) ||
-            card.label.localizedCaseInsensitiveContains(query)
+        searchResults = properties.filter { property in
+            property.title.localizedCaseInsensitiveContains(query) ||
+            property.location.localizedCaseInsensitiveContains(query) ||
+            property.category.localizedCaseInsensitiveContains(query) ||
+            property.description.localizedCaseInsensitiveContains(query) ||
+            property.ownerName.localizedCaseInsensitiveContains(query) ||
+            property.listingType.rawValue.localizedCaseInsensitiveContains(query)
+        }
+        
+        // Sort results by relevance (title matches first, then location, etc.)
+        searchResults.sort { property1, property2 in
+            let title1Match = property1.title.localizedCaseInsensitiveContains(query)
+            let title2Match = property2.title.localizedCaseInsensitiveContains(query)
+            
+            if title1Match && !title2Match {
+                return true
+            } else if !title1Match && title2Match {
+                return false
+            }
+            
+            let location1Match = property1.location.localizedCaseInsensitiveContains(query)
+            let location2Match = property2.location.localizedCaseInsensitiveContains(query)
+            
+            if location1Match && !location2Match {
+                return true
+            } else if !location1Match && location2Match {
+                return false
+            }
+            
+            // If same relevance, sort by listing date (newest first)
+            return property1.listingDate > property2.listingDate
         }
     }
     
     func performNearbySearch() {
+        guard let cloudkitViewModel = cloudkitViewModel else { return }
+        
         isShowingResults = true
         searchText = "Nearby"
+        isLoading = true
         
-        searchResults = MockData.stayInPuducherry + [MockData.sampleCards[0]]
+        // For now, just show all active properties
+        // In a real app, you'd use location services to find nearby properties
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.searchResults = cloudkitViewModel.allProperties.filter { $0.status == .active }
+            self.isLoading = false
+        }
     }
     
     func selectRecentSearch(_ searchTerm: String) {
@@ -62,15 +111,54 @@ class SearchViewModel: ObservableObject {
         clearSearchResults()
     }
     
+    func clearRecentSearches() {
+        recentSearches.removeAll()
+    }
+    
     private func clearSearchResults() {
         searchResults = []
         isShowingResults = false
         isLoading = false
     }
     
+    // MARK: - Filter Functions
+    func filterByCategory(_ category: String) {
+        guard let cloudkitViewModel = cloudkitViewModel else { return }
+        
+        isShowingResults = true
+        searchText = category
+        isLoading = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.searchResults = cloudkitViewModel.allProperties.filter { 
+                $0.category.localizedCaseInsensitiveContains(category) && $0.status == .active
+            }
+            self.isLoading = false
+        }
+    }
+    
+    func filterByListingType(_ listingType: ListingType) {
+        guard let cloudkitViewModel = cloudkitViewModel else { return }
+        
+        isShowingResults = true
+        searchText = listingType.rawValue
+        isLoading = true
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.searchResults = cloudkitViewModel.allProperties.filter { 
+                $0.listingType == listingType && $0.status == .active
+            }
+            self.isLoading = false
+        }
+    }
+    
     // MARK: - Computed Properties
     var resultCount: String {
-        return "\(searchResults.count) places found"
+        if searchResults.count == 1 {
+            return "1 property found"
+        } else {
+            return "\(searchResults.count) properties found"
+        }
     }
     
     var hasResults: Bool {

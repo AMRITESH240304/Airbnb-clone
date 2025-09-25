@@ -17,7 +17,8 @@ struct ExploreView: View {
                 Button {
                     isSearching = true
                 } label: {
-                    SearchBarView(searchText: $searchText)
+                    SearchBarView(searchText: $searchText, isSearching: $isSearching)
+                        
                 }
                 .fullScreenCover(isPresented: $isSearching) {
                     SearchView(isSearching: $isSearching)

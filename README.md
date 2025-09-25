@@ -1,6 +1,6 @@
 # RealEstate
 
-A SwiftUI-based Airbnb clone application implementing MVVM architecture with CloudKit for data persistence and synchronization.
+**Conversion of Airbnb clone to a realEstate app with feature enhancement using cloudkit for data and the challenge to keep the UI same.**
 
 **Explanation Video:** `https://drive.google.com/file/d/1Ccvmp7BY9Tykb4r2xhpkkbErMRHypsV_/view?usp=sharing`
 
@@ -16,6 +16,46 @@ The application follows the **Model-View-ViewModel (MVVM)** architecture pattern
 │  (SwiftUI)  │    │(@Published) │    │ (CloudKit)  │
 └─────────────┘    └─────────────┘    └─────────────┘
 ```
+
+#### **Auth/security**
+
+The application implemenets a secure authentication system using ****Keychain Services**** for credential sotre ****CloudKit**** for user Management
+
+##### **Authentication Architecture**
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  AuthManager    │───▶│  Keychain       │    │   CloudKit      │
+│  ViewModel      │    │  Helper         │───▶│   User Records  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+##### **AuthManagerViewModel**
+- **State Management**: Uses `@Published` properties for reactive UI updates
+- **Guest Mode**: Allows browsing without authentication
+- **Persistent Storage**: Secures user credentials in iOS Keychain
+- **Automatic Session**: Restores user session on app launch
+
+```swift
+class AuthManagerViewModel: ObservableObject {
+    @Published var isAuthenticated = false
+    @Published var isGuestMode = false
+    @Published var currentUser: User?
+    
+    // Keychain-based persistence
+    // Guest mode fallback
+    // Automatic session restoration
+}
+```
+
+
+##### **Apple ID Authentication Flow**
+
+![Authentication Flow](images/SignUp.png)
+1. **App Launch**: `loadUserFromKeychain()` checks for existing credentials
+2. **No Credentials**: Automatically enters guest mode for browsing
+3. **Login Success**: `saveUser()` stores encrypted credentials in Keychain
+4. **Session Active**: User remains authenticated across app restarts
+5. **Logout**: `removeUser()` securely deletes all stored credentials
 
 #### **Views (SwiftUI)**
 - `PropertyListView`: Displays list of available properties
@@ -281,41 +321,14 @@ SwiftUI View
 - **Service Marketplace**: Platform for professional services
 
 ### CloudKit-Powered Features
-- **Offline Support**: Local caching with CloudKit sync
-- **Multi-device Sync**: Seamless experience across iOS devices
-- **Automatic Backup**: Data automatically backed up to iCloud
-- **Collaborative Editing**: Multiple users can interact with shared data
 - **Analytics Dashboard**: Revenue tracking and performance metrics
-
-## 🛠️ Technical Implementation
-
-### MVVM Benefits in This Project
-1. **Separation of Concerns**: Clear distinction between UI, business logic, and data
-2. **Testability**: ViewModels can be unit tested independently
-3. **Reusability**: ViewModels can be shared across different views
-4. **Reactive UI**: SwiftUI automatically updates when ViewModel data changes
-
-### CloudKit Advantages
-1. **Scalability**: Handles large amounts of data and users
-2. **Security**: Built-in authentication and authorization
-3. **Performance**: Optimized for iOS ecosystem
-4. **Cost-effective**: Free tier available for development
 
 ## 📱 Setup Instructions
 
 1. **Enable CloudKit capability** in Xcode project settings
 2. **Configure CloudKit schema** in CloudKit Dashboard
-3. **Set up record types** for Property, Booking, User, Professional, and Payment
-4. **Configure iCloud account** on testing device
-5. **Build and run** the application
-
-## 🔧 Development Environment
-
-- **iOS 15.0+**
-- **Xcode 13.0+**
-- **SwiftUI 3.0+**
-- **CloudKit Framework**
-- **Combine Framework** (for reactive programming)
+3. **Configure iCloud account** on testing device
+4. **Build and run** the application
 
 ## 📊 Data Relationships
 
