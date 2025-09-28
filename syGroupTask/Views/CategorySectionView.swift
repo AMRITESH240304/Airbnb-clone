@@ -54,7 +54,9 @@ struct CategorySectionView: View {
 struct PropertyCardView: View {
     let property: PropertyListing
     @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
+    @EnvironmentObject var authManager: AuthManagerViewModel
     @State private var isWishlisted: Bool = false
+    @State private var showingLoginAlert = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -78,7 +80,11 @@ struct PropertyCardView: View {
                     HStack {
                         Spacer()
                         Button {
-                            toggleWishlist()
+                            if authManager.isAuthenticated {
+                                toggleWishlist()
+                            } else {
+                                showingLoginAlert = true
+                            }
                         } label: {
                             Image(systemName: isWishlisted ? "heart.fill" : "heart")
                                 .foregroundColor(isWishlisted ? .red : .white)
@@ -131,6 +137,11 @@ struct PropertyCardView: View {
         }
         .onChange(of: cloudkitViewModel.wishlistItems) { _ in
             updateWishlistStatus()
+        }
+        .alert("Please login", isPresented: $showingLoginAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("You need to log in to add this property to your wishlist.")
         }
     }
     
