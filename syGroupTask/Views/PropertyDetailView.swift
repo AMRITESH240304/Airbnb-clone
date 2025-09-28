@@ -11,6 +11,7 @@ import MapKit
 struct PropertyDetailView: View {
     let property: PropertyListing
     @EnvironmentObject var cloudkitViewModel: CloudkitManagerViewModel
+    @EnvironmentObject var authManager: AuthManagerViewModel
     @StateObject private var viewModel: PropertyDetailViewModel
     @Environment(\.dismiss) private var dismiss
     
@@ -20,10 +21,13 @@ struct PropertyDetailView: View {
     @State private var dateSelectionMode: DateAndGuestSection.DateSelectionMode = .dates
     @State private var flexibilityOption: DateAndGuestSection.FlexibilityOption = .exactDates
     
+    // New state for login alert
+    @State private var showingLoginAlert = false
+    
     init(property: PropertyListing) {
         self.property = property
         self._viewModel = StateObject(wrappedValue: PropertyDetailViewModel(
-            cardId: UUID(), 
+            cardId: UUID(),
             property: property
         ))
     }
@@ -88,9 +92,22 @@ struct PropertyDetailView: View {
             }
             
             PropertyBottomActionBar(
-                property: property, 
+                property: property,
                 viewModel: viewModel,
-                showingDatePicker: $showingDatePicker,
+                showingDatePicker: Binding(
+                    get: { showingDatePicker },
+                    set: { newValue in
+                        if newValue {
+                            if authManager.isAuthenticated {
+                                showingDatePicker = true
+                            } else {
+                                showingLoginAlert = true
+                            }
+                        } else {
+                            showingDatePicker = false
+                        }
+                    }
+                ),
                 selectedStartDate: $selectedStartDate,
                 selectedEndDate: $selectedEndDate
             )
@@ -110,6 +127,11 @@ struct PropertyDetailView: View {
                 }
             )
         }
+        .alert("Please login", isPresented: $showingLoginAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("You need to log in to book this property.")
+        }
         .onAppear {
             viewModel.setCloudkitViewModel(cloudkitViewModel)
             viewModel.updateWishlistStatus()
@@ -122,7 +144,7 @@ struct PropertyDetailView: View {
             viewModel.updateWishlistStatus()
         }
         .alert(viewModel.paymentSuccess ? "Payment Successful!" : "Payment Info", isPresented: $viewModel.showingPaymentAlert) {
-            Button("OK") { 
+            Button("OK") {
                 if viewModel.paymentSuccess {
                     cloudkitViewModel.fetchUserPayments(forceRefresh: true)
                 }
@@ -158,4 +180,3 @@ struct PropertyDetailView: View {
         }
     }
 }
-
